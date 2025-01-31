@@ -4,20 +4,22 @@ import { WebView } from "react-native-webview";
 
 const WebPreview = () => (
   <iframe
-    src="https://www.tinnitushelp.me/"
+    src="https://www.tinnitushelp.me/zen"
     style={{ width: "100%", height: "100vh", border: "none" }}
+    title="TinnitusHelp - Sounds"
   />
 );
 
-export default function HomeScreen() {
+export default function SoundsScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
+
       {Platform.OS === "web" ? (
         <WebPreview />
       ) : (
         <WebView
-          source={{ uri: "https://www.tinnitushelp.me/" }}
+          source={{ uri: "https://www.tinnitushelp.me/zen" }}
           style={styles.webview}
         />
       )}
