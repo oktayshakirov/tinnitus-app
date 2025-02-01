@@ -1,10 +1,11 @@
 import React from "react";
-import { Platform, View, StyleSheet, StatusBar } from "react-native";
+import { Platform, StyleSheet, StatusBar } from "react-native";
 import { WebView } from "react-native-webview";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const WebPreview = () => (
   <iframe
-    src="https://www.tinnitushelp.me/zen"
+    src="https://www.tinnitushelp.me/zen?isApp=true"
     style={{ width: "100%", height: "100vh", border: "none" }}
     title="TinnitusHelp - Sounds"
   />
@@ -12,18 +13,18 @@ const WebPreview = () => (
 
 export default function SoundsScreen() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-
       {Platform.OS === "web" ? (
         <WebPreview />
       ) : (
         <WebView
-          source={{ uri: "https://www.tinnitushelp.me/zen" }}
+          source={{ uri: "https://www.tinnitushelp.me/zen?isApp=true" }}
           style={styles.webview}
+          injectedJavaScript={`window.isApp = true; true;`}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
