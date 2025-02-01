@@ -1,27 +1,30 @@
 import React from "react";
-import { Platform, View, StyleSheet, StatusBar } from "react-native";
+import { Platform, StyleSheet, StatusBar } from "react-native";
 import { WebView } from "react-native-webview";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const WebPreview = () => (
   <iframe
-    src="https://www.tinnitushelp.me/"
+    src="https://www.tinnitushelp.me/?isApp=true"
     style={{ width: "100%", height: "100vh", border: "none" }}
+    title="TinnitusHelp - Home"
   />
 );
 
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       {Platform.OS === "web" ? (
         <WebPreview />
       ) : (
         <WebView
-          source={{ uri: "https://www.tinnitushelp.me/" }}
+          source={{ uri: "https://www.tinnitushelp.me/?isApp=true" }}
           style={styles.webview}
+          injectedJavaScript={`window.isApp = true; true;`}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
