@@ -10,13 +10,21 @@ import { WebView } from "react-native-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
+import Loader from "@/components/ui/Loader";
 
-const WebPreview = ({ webViewKey }: { webViewKey: number }) => (
+const WebPreview = ({
+  webViewKey,
+  onLoad,
+}: {
+  webViewKey: number;
+  onLoad: () => void;
+}) => (
   <iframe
     key={webViewKey}
     src={`https://www.tinnitushelp.me/zen?isApp=true&refresh=${webViewKey}`}
     style={{ width: "100%", height: "100vh", border: "none" }}
     title="TinnitusHelp - Sounds"
+    onLoad={onLoad}
   />
 );
 
@@ -24,14 +32,21 @@ export default function SoundsScreen() {
   const { refreshCount } = useRefresh("sounds");
   const [webViewKey, setWebViewKey] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const webviewRef = useRef<WebView>(null);
 
   useEffect(() => {
     setWebViewKey((prev) => prev + 1);
+    setLoading(true);
   }, [refreshCount]);
+
+  const handleLoadEnd = () => {
+    setLoading(false);
+  };
 
   const onRefresh = () => {
     setRefreshing(true);
+    setLoading(true);
     if (webviewRef.current) {
       webviewRef.current.reload();
     }
@@ -44,16 +59,23 @@ export default function SoundsScreen() {
     <View style={[styles.container, { backgroundColor: Colors.background }]}>
       <SafeAreaView style={styles.safeArea}>
         {Platform.OS === "web" ? (
-          <WebPreview webViewKey={webViewKey} />
+          <>
+            <WebPreview webViewKey={webViewKey} onLoad={handleLoadEnd} />
+            {loading && <Loader />}
+          </>
         ) : Platform.OS === "android" ? (
-          <WebView
-            key={webViewKey}
-            ref={webviewRef}
-            source={{ uri: "https://www.tinnitushelp.me/zen?isApp=true" }}
-            style={styles.webview}
-            injectedJavaScript={`window.isApp = true; true;`}
-            pullToRefreshEnabled={true}
-          />
+          <>
+            <WebView
+              key={webViewKey}
+              ref={webviewRef}
+              source={{ uri: "https://www.tinnitushelp.me/zen?isApp=true" }}
+              style={styles.webview}
+              injectedJavaScript={`window.isApp = true; true;`}
+              pullToRefreshEnabled={true}
+              onLoadEnd={handleLoadEnd}
+            />
+            {loading && <Loader />}
+          </>
         ) : (
           <ScrollView
             contentContainerStyle={{ flex: 1 }}
@@ -61,13 +83,17 @@ export default function SoundsScreen() {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           >
-            <WebView
-              key={webViewKey}
-              ref={webviewRef}
-              source={{ uri: "https://www.tinnitushelp.me/zen?isApp=true" }}
-              style={styles.webview}
-              injectedJavaScript={`window.isApp = true; true;`}
-            />
+            <>
+              <WebView
+                key={webViewKey}
+                ref={webviewRef}
+                source={{ uri: "https://www.tinnitushelp.me/zen?isApp=true" }}
+                style={styles.webview}
+                injectedJavaScript={`window.isApp = true; true;`}
+                onLoadEnd={handleLoadEnd}
+              />
+              {loading && <Loader />}
+            </>
           </ScrollView>
         )}
       </SafeAreaView>
