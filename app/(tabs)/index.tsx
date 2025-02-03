@@ -4,12 +4,12 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  StatusBar,
   View,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRefresh } from "@/contexts/RefreshContext";
+import { Colors } from "@/constants/Colors";
 
 export default function HomeScreen() {
   const { refreshCount } = useRefresh("home");
@@ -32,8 +32,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000000" />
+    <View style={[styles.container, { backgroundColor: Colors.background }]}>
       <SafeAreaView style={styles.safeArea}>
         {Platform.OS === "web" ? (
           <iframe
@@ -75,13 +74,12 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#291b36",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   safeArea: {
     flex: 1,
   },
   webview: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
 });
