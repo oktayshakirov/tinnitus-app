@@ -16,7 +16,6 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
         tabBarLabelPosition: "below-icon",
-        tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarLabelStyle: {
           fontSize: 12,
@@ -24,14 +23,11 @@ export default function TabLayout() {
           paddingBottom: 15,
         },
         tabBarStyle: Platform.select({
-          ios: {
-            position: "absolute",
-          },
+          ios: { position: "absolute" },
           default: {},
         }),
       }}
     >
-      {/* Home Tab */}
       <Tabs.Screen
         name="index"
         options={{
@@ -39,10 +35,10 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="home" size={25} color={color} />
           ),
+          tabBarButton: (props) => <HapticTab {...props} refreshKey="home" />,
         }}
       />
 
-      {/* Posts Tab */}
       <Tabs.Screen
         name="posts"
         options={{
@@ -50,10 +46,10 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="hashtag" size={25} color={color} />
           ),
+          tabBarButton: (props) => <HapticTab {...props} refreshKey="posts" />,
         }}
       />
 
-      {/* Sounds Tab */}
       <Tabs.Screen
         name="sounds"
         options={{
@@ -61,6 +57,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="music-note" size={25} color={color} />
           ),
+          tabBarButton: (props) => <HapticTab {...props} refreshKey="sounds" />,
         }}
       />
     </Tabs>
