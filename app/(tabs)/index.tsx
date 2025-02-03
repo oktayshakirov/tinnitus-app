@@ -1,25 +1,33 @@
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Platform, StyleSheet, StatusBar, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const WebPreview = () => (
-  <iframe
-    src="https://www.tinnitushelp.me/?isApp=true"
-    style={{ width: "100%", height: "100vh", border: "none" }}
-    title="TinnitusHelp - Home"
-  />
-);
+import { useRefresh } from "@/contexts/RefreshContext";
 
 export default function HomeScreen() {
+  const { refreshCount } = useRefresh("home");
+  const [webViewKey, setWebViewKey] = useState(0);
+  const webviewRef = useRef<WebView>(null);
+
+  useEffect(() => {
+    setWebViewKey((prev) => prev + 1);
+  }, [refreshCount]);
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000000" />
       <SafeAreaView style={styles.safeArea}>
         {Platform.OS === "web" ? (
-          <WebPreview />
+          <iframe
+            key={webViewKey}
+            src={`https://www.tinnitushelp.me/?isApp=true&refresh=${webViewKey}`}
+            style={{ width: "100%", height: "100vh", border: "none" }}
+            title="TinnitusHelp - Home"
+          />
         ) : (
           <WebView
+            key={webViewKey}
+            ref={webviewRef}
             source={{ uri: "https://www.tinnitushelp.me/?isApp=true" }}
             style={styles.webview}
             injectedJavaScript={`window.isApp = true; true;`}
