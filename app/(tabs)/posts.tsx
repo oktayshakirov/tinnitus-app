@@ -1,5 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { Platform, StyleSheet, StatusBar, View } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import {
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  StatusBar,
+  View,
+} from "react-native";
 import { WebView } from "react-native-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRefresh } from "@/contexts/RefreshContext";
@@ -16,10 +23,22 @@ const WebPreview = ({ webViewKey }: { webViewKey: number }) => (
 export default function PostsScreen() {
   const { refreshCount } = useRefresh("posts");
   const [webViewKey, setWebViewKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const webviewRef = useRef<WebView>(null);
 
   useEffect(() => {
     setWebViewKey((prev) => prev + 1);
   }, [refreshCount]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    if (webviewRef.current) {
+      webviewRef.current.reload();
+    }
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
 
   return (
     <View style={styles.container}>
@@ -27,13 +46,30 @@ export default function PostsScreen() {
       <SafeAreaView style={styles.safeArea}>
         {Platform.OS === "web" ? (
           <WebPreview webViewKey={webViewKey} />
-        ) : (
+        ) : Platform.OS === "android" ? (
           <WebView
             key={webViewKey}
+            ref={webviewRef}
             source={{ uri: "https://www.tinnitushelp.me/blog?isApp=true" }}
             style={styles.webview}
             injectedJavaScript={`window.isApp = true; true;`}
+            pullToRefreshEnabled={true}
           />
+        ) : (
+          <ScrollView
+            contentContainerStyle={{ flex: 1 }}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            <WebView
+              key={webViewKey}
+              ref={webviewRef}
+              source={{ uri: "https://www.tinnitushelp.me/blog?isApp=true" }}
+              style={styles.webview}
+              injectedJavaScript={`window.isApp = true; true;`}
+            />
+          </ScrollView>
         )}
       </SafeAreaView>
     </View>
