@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Platform, View, StyleSheet } from "react-native";
-
-let LottieView: any;
+import { View, StyleSheet } from "react-native";
+import { Video } from "expo-av";
 
 const Loader = () => {
   const [isClient, setIsClient] = useState(false);
@@ -10,23 +9,17 @@ const Loader = () => {
     setIsClient(true);
   }, []);
 
-  if (Platform.OS === "web") {
-    if (!isClient) return null;
-    LottieView = require("lottie-react").default;
-  } else {
-    LottieView = require("lottie-react-native").default;
-  }
+  if (!isClient) return null;
 
   return (
     <View style={styles.loaderWrapper}>
-      {isClient && (
-        <LottieView
-          source={require("@/assets/loader.json")}
-          autoPlay
-          loop
-          style={styles.lottie}
-        />
-      )}
+      <Video
+        source={require("@/assets/animations/loader.webm")}
+        shouldPlay
+        isLooping
+        style={styles.video}
+        isMuted
+      />
     </View>
   );
 };
@@ -41,7 +34,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  lottie: {
+  video: {
     width: 200,
     height: 200,
   },
