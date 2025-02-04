@@ -1,16 +1,38 @@
-import React from "react";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Platform, View, StyleSheet } from "react-native";
+
+let LottieView: any;
 
 const Loader = () => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (Platform.OS === "web") {
+    if (!isClient) return null;
+    LottieView = require("lottie-react").default;
+  } else {
+    LottieView = require("lottie-react-native").default;
+  }
+
   return (
-    <View style={styles.loaderContainer}>
-      <ActivityIndicator size="large" color="#fff" />
+    <View style={styles.loaderWrapper}>
+      {isClient && (
+        <LottieView
+          source={require("@/assets/loader.json")}
+          autoPlay
+          loop
+          style={styles.lottie}
+        />
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  loaderContainer: {
+  loaderWrapper: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -18,7 +40,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1,
+  },
+  lottie: {
+    width: 200,
+    height: 200,
   },
 });
 
