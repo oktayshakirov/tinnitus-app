@@ -10,7 +10,7 @@ import { WebView } from "react-native-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
-import Loader from "@/components/ui/Loader"; // Loader with its own styling
+import Loader from "@/components/ui/Loader";
 
 export default function HomeScreen() {
   const { refreshCount } = useRefresh("home");
@@ -26,66 +26,49 @@ export default function HomeScreen() {
 
   const handleLoadEnd = () => {
     setLoading(false);
+    setRefreshing(false);
   };
 
   const onRefresh = () => {
     setRefreshing(true);
-    setLoading(true);
     if (webviewRef.current) {
       webviewRef.current.reload();
     }
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
   };
+
+  const webUri = `https://www.tinnitushelp.me/?isApp=true&refresh=${webViewKey}`;
 
   return (
     <View style={[styles.container, { backgroundColor: Colors.background }]}>
       <SafeAreaView style={styles.safeArea}>
         {Platform.OS === "web" ? (
-          <>
-            <iframe
-              key={webViewKey}
-              src={`https://www.tinnitushelp.me/?isApp=true&refresh=${webViewKey}`}
-              style={{ width: "100%", height: "100vh", border: "none" }}
-              title="TinnitusHelp - Home"
-              onLoad={handleLoadEnd}
-            />
-            {loading && <Loader />}
-          </>
-        ) : Platform.OS === "android" ? (
-          <>
-            <WebView
-              key={webViewKey}
-              ref={webviewRef}
-              source={{ uri: "https://www.tinnitushelp.me/?isApp=true" }}
-              style={styles.webview}
-              injectedJavaScript={`window.isApp = true; true;`}
-              pullToRefreshEnabled={true}
-              onLoadEnd={handleLoadEnd}
-            />
-            {loading && <Loader />}
-          </>
+          <iframe
+            key={webViewKey}
+            src={webUri}
+            style={{ width: "100%", height: "100vh", border: "none" }}
+            title="TinnitusHelp - Home"
+            onLoad={handleLoadEnd}
+          />
         ) : (
           <ScrollView
             contentContainerStyle={{ flex: 1 }}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              Platform.OS !== "android" ? (
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              ) : undefined
             }
           >
-            <>
-              <WebView
-                key={webViewKey}
-                ref={webviewRef}
-                source={{ uri: "https://www.tinnitushelp.me/?isApp=true" }}
-                style={styles.webview}
-                injectedJavaScript={`window.isApp = true; true;`}
-                onLoadEnd={handleLoadEnd}
-              />
-              {loading && <Loader />}
-            </>
+            <WebView
+              key={webViewKey}
+              ref={webviewRef}
+              source={{ uri: webUri }}
+              style={styles.webview}
+              injectedJavaScript={`window.isApp = true; true;`}
+              onLoadEnd={handleLoadEnd}
+            />
           </ScrollView>
         )}
+        {loading && !refreshing && <Loader />}
       </SafeAreaView>
     </View>
   );

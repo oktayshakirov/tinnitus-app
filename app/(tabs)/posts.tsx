@@ -42,60 +42,43 @@ export default function PostsScreen() {
 
   const handleLoadEnd = () => {
     setLoading(false);
+    setRefreshing(false);
   };
 
   const onRefresh = () => {
     setRefreshing(true);
-    setLoading(true);
     if (webviewRef.current) {
       webviewRef.current.reload();
     }
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
   };
+
+  const webUri = `https://www.tinnitushelp.me/blog?isApp=true&refresh=${webViewKey}`;
 
   return (
     <View style={[styles.container, { backgroundColor: Colors.background }]}>
       <SafeAreaView style={styles.safeArea}>
         {Platform.OS === "web" ? (
-          <>
-            <WebPreview webViewKey={webViewKey} onLoad={handleLoadEnd} />
-            {loading && <Loader />}
-          </>
-        ) : Platform.OS === "android" ? (
-          <>
-            <WebView
-              key={webViewKey}
-              ref={webviewRef}
-              source={{ uri: "https://www.tinnitushelp.me/blog?isApp=true" }}
-              style={styles.webview}
-              injectedJavaScript={`window.isApp = true; true;`}
-              pullToRefreshEnabled={true}
-              onLoadEnd={handleLoadEnd}
-            />
-            {loading && <Loader />}
-          </>
+          <WebPreview webViewKey={webViewKey} onLoad={handleLoadEnd} />
         ) : (
           <ScrollView
             contentContainerStyle={{ flex: 1 }}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              Platform.OS !== "android" ? (
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              ) : undefined
             }
           >
-            <>
-              <WebView
-                key={webViewKey}
-                ref={webviewRef}
-                source={{ uri: "https://www.tinnitushelp.me/blog?isApp=true" }}
-                style={styles.webview}
-                injectedJavaScript={`window.isApp = true; true;`}
-                onLoadEnd={handleLoadEnd}
-              />
-              {loading && <Loader />}
-            </>
+            <WebView
+              key={webViewKey}
+              ref={webviewRef}
+              source={{ uri: webUri }}
+              style={styles.webview}
+              injectedJavaScript={`window.isApp = true; true;`}
+              onLoadEnd={handleLoadEnd}
+            />
           </ScrollView>
         )}
+        {loading && <Loader />}
       </SafeAreaView>
     </View>
   );
