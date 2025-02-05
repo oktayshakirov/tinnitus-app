@@ -62,6 +62,7 @@ export default function PostsScreen() {
               source={{ uri: webUri }}
               style={styles.webview}
               injectedJavaScript={`window.isApp = true; true;`}
+              onLoadStart={() => setLoading(true)}
               onLoadEnd={handleLoadEnd}
             />
           </ScrollView>
