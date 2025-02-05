@@ -45,13 +45,6 @@ export default function SoundsScreen() {
     setRefreshing(false);
   };
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    if (webviewRef.current) {
-      webviewRef.current.reload();
-    }
-  };
-
   const webUri = `https://www.tinnitushelp.me/zen?isApp=true&refresh=${webViewKey}`;
 
   return (
@@ -60,7 +53,9 @@ export default function SoundsScreen() {
         {Platform.OS === "web" ? (
           <WebPreview webViewKey={webViewKey} onLoad={handleLoadEnd} />
         ) : (
-          <ScrollView contentContainerStyle={{ flex: 1 }}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 30 }}
+          >
             <WebView
               key={webViewKey}
               ref={webviewRef}
