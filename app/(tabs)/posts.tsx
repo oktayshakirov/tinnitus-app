@@ -60,6 +60,8 @@ export default function PostsScreen() {
               key={webViewKey}
               ref={webviewRef}
               source={{ uri: webUri }}
+              cacheEnabled={true}
+              domStorageEnabled={true}
               style={styles.webview}
               injectedJavaScript={`window.isApp = true; true;`}
               onLoadStart={() => setLoading(true)}
