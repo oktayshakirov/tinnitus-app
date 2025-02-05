@@ -46,6 +46,7 @@ export default function HomeScreen() {
               source={{ uri: webUri }}
               style={styles.webview}
               injectedJavaScript={`window.isApp = true; true;`}
+              onLoadStart={() => setLoading(true)}
               onLoadEnd={handleLoadEnd}
             />
           </ScrollView>
