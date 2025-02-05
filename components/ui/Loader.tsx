@@ -1,24 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { View, StyleSheet } from "react-native";
-import { Video } from "expo-av";
+import LottieView from "lottie-react-native";
 
 const Loader = () => {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) return null;
-
   return (
     <View style={styles.loaderWrapper}>
-      <Video
-        source={require("@/assets/animations/loader.webm")}
-        shouldPlay
-        isLooping
-        style={styles.video}
-        isMuted
+      <LottieView
+        source={require("@/assets/animations/loader.json")}
+        autoPlay
+        loop
+        style={styles.lottie}
       />
     </View>
   );
@@ -34,9 +25,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  video: {
-    width: 200,
-    height: 200,
+  lottie: {
+    width: 250,
+    height: 250,
   },
 });
 

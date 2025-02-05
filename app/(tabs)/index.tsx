@@ -1,11 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import {
-  Platform,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRefresh } from "@/contexts/RefreshContext";
@@ -50,14 +44,7 @@ export default function HomeScreen() {
             onLoad={handleLoadEnd}
           />
         ) : (
-          <ScrollView
-            contentContainerStyle={{ flex: 1 }}
-            refreshControl={
-              Platform.OS !== "android" ? (
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              ) : undefined
-            }
-          >
+          <ScrollView contentContainerStyle={{ flex: 1 }}>
             <WebView
               key={webViewKey}
               ref={webviewRef}

@@ -60,14 +60,7 @@ export default function SoundsScreen() {
         {Platform.OS === "web" ? (
           <WebPreview webViewKey={webViewKey} onLoad={handleLoadEnd} />
         ) : (
-          <ScrollView
-            contentContainerStyle={{ flex: 1 }}
-            refreshControl={
-              Platform.OS !== "android" ? (
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              ) : undefined
-            }
-          >
+          <ScrollView contentContainerStyle={{ flex: 1 }}>
             <WebView
               key={webViewKey}
               ref={webviewRef}
