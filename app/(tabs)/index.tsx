@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
 import Loader from "@/components/ui/Loader";
+import TestNotification from "@/components/TestNotification";
 
 export default function HomeScreen() {
   const { refreshCount } = useRefresh("home");
@@ -55,6 +56,7 @@ export default function HomeScreen() {
         )}
         {loading && !refreshing && <Loader />}
       </SafeAreaView>
+      <TestNotification />
     </View>
   );
 }
