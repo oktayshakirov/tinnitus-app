@@ -6,8 +6,8 @@ export default function TestNotification() {
   async function sendLocalNotification() {
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Local Notification",
-        body: "This is a test notification!",
+        title: "New in Tinnitus Help",
+        body: "New Post was uploaded, check it out!",
         sound: "default",
       },
       trigger: null,

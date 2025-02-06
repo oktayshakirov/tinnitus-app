@@ -12,14 +12,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.tinnitushelpmeapp"
+      "bundleIdentifier": "com.shadev.tinnitushelpme"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#5B3964"
       },
-      "package": "com.anonymous.tinnitushelpmeapp"
+      "package": "com.shadev.tinnitushelpme"
     },
     "web": {
       "bundler": "metro",
@@ -29,7 +29,6 @@
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "imageWidth": 400,
       "backgroundColor": "#5B3964"
     },
     "plugins": [
@@ -39,7 +38,6 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
-          "imageWidth": 400,
           "backgroundColor": "#5B3964"
         }
       ]
