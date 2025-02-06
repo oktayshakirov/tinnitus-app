@@ -20,12 +20,16 @@ export async function registerForPushNotificationsAsync() {
     return;
   }
 
-  const token = (await Notifications.getExpoPushTokenAsync()).data;
-  console.log("Expo Push Token:", token);
+  const token = (
+    await Notifications.getExpoPushTokenAsync({
+      projectId: "274da90d-795f-4715-8c0e-f215c3dc85ee",
+    })
+  ).data;
+
   return token;
 }
 
-export async function scheduleLocalNotification(title, body) {
+export async function scheduleLocalNotification(title: string, body: string) {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: title,
