@@ -1,7 +1,9 @@
 {
   "expo": {
-    "name": "TinnitusHelp.me App",
-    "slug": "tinnitus-help-me-app",
+    "name": "Tinnitus Help",
+    "slug": "tinnitus-help-me",
+    "owner": "oktay.shakirov",
+    "projectId": "274da90d-795f-4715-8c0e-f215c3dc85ee",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -27,6 +29,7 @@
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
+      "imageWidth": 400,
       "backgroundColor": "#5B3964"
     },
     "plugins": [
@@ -36,10 +39,19 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
+          "imageWidth": 400,
           "backgroundColor": "#5B3964"
         }
       ]
-    ],
+    ]
+  },
+  "extra": {
+    "router": {
+      "origin": false
+    },
+    "eas": {
+      "projectId": "274da90d-795f-4715-8c0e-f215c3dc85ee"
+    },
     "experiments": {
       "typedRoutes": true
     }

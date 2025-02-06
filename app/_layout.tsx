@@ -1,7 +1,6 @@
 import { Slot } from "expo-router";
 import { RefreshProvider } from "@/contexts/RefreshContext";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -10,6 +9,7 @@ import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "@/scripts/Notifications";
 import { EventSubscription } from "expo-modules-core";
 
+// Prevent the splash screen from auto-hiding until we're ready.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -18,22 +18,36 @@ export default function RootLayout() {
   const responseListener = useRef<EventSubscription | null>(null);
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then((token) => {
-      if (token) {
-        setExpoPushToken(token);
-      }
-    });
+    // Hide the splash screen immediately since we removed asset checks.
+    SplashScreen.hideAsync();
 
+    // Register for push notifications.
+    registerForPushNotificationsAsync()
+      .then((token) => {
+        if (token) {
+          setExpoPushToken(token);
+          console.log("Expo Push Token:", token);
+        } else {
+          console.warn("No Expo push token returned.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error during push registration:", error);
+      });
+
+    // Listen for incoming notifications.
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log("Notification Received:", notification);
       });
 
+    // Listen for notification interactions.
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("Notification Clicked:", response);
       });
 
+    // Clean up the subscriptions on unmount.
     return () => {
       if (notificationListener.current) {
         Notifications.removeNotificationSubscription(
