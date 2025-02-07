@@ -41,3 +41,6 @@ ios
 
 # vs
 .vscode
+
+# Firebase Config
+config/FirebaseConfig.ts
