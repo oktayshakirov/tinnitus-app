@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Tinnitus Help",
+    "name": "Tinnitus: Help Me",
     "slug": "tinnitus-help-me",
     "owner": "oktay.shakirov",
     "projectId": "274da90d-795f-4715-8c0e-f215c3dc85ee",
@@ -43,7 +43,15 @@
           "backgroundColor": "#5B3964"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "274da90d-795f-4715-8c0e-f215c3dc85ee"
+      }
+    }
   },
   "extra": {
     "router": {
