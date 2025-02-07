@@ -30,44 +30,35 @@ const WebPreview = ({
 
 export default function PostsScreen() {
   const { refreshCount } = useRefresh("posts");
-  const [webViewKey, setWebViewKey] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const webviewRef = useRef<WebView>(null);
+  const webViewKey = useRef(0);
 
   useEffect(() => {
-    setWebViewKey((prev) => prev + 1);
+    webViewKey.current += 1;
     setLoading(true);
   }, [refreshCount]);
-
-  const handleLoadEnd = () => {
-    setLoading(false);
-    setRefreshing(false);
-  };
-
-  const webUri = `https://www.tinnitushelp.me/blog?isApp=true&refresh=${webViewKey}`;
 
   return (
     <View style={[styles.container, { backgroundColor: Colors.background }]}>
       <SafeAreaView style={styles.safeArea}>
         {Platform.OS === "web" ? (
-          <WebPreview webViewKey={webViewKey} onLoad={handleLoadEnd} />
+          <WebPreview
+            webViewKey={webViewKey.current}
+            onLoad={() => setLoading(false)}
+          />
         ) : (
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: 30 }}
-          >
-            <WebView
-              key={webViewKey}
-              ref={webviewRef}
-              source={{ uri: webUri }}
-              cacheEnabled={true}
-              domStorageEnabled={true}
-              style={styles.webview}
-              injectedJavaScript={`window.isApp = true; true;`}
-              onLoadStart={() => setLoading(true)}
-              onLoadEnd={handleLoadEnd}
-            />
-          </ScrollView>
+          <WebView
+            key={webViewKey.current}
+            source={{
+              uri: `https://www.tinnitushelp.me/blog?isApp=true&refresh=${webViewKey.current}`,
+            }}
+            cacheEnabled
+            domStorageEnabled
+            style={styles.webview}
+            injectedJavaScript={`window.isApp = true; true;`}
+            onLoadStart={() => setLoading(true)}
+            onLoad={() => setLoading(false)}
+          />
         )}
         {loading && <Loader />}
       </SafeAreaView>
