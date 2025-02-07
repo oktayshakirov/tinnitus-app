@@ -44,3 +44,6 @@ ios
 
 # Firebase Config
 config/FirebaseConfig.ts
+
+#Keys
+AuthKeys
