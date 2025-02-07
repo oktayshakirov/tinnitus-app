@@ -28,8 +28,6 @@ export async function registerForPushNotificationsAsync(userId?: string) {
     })
   ).data;
 
-  console.log("Expo Push Token:", token);
-
   if (userId) {
     await setDoc(doc(db, "pushTokens", userId), { token });
   } else {

@@ -1,6 +1,5 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import { Colors } from "@/constants/Colors";
 
 export default function TabBarBackground() {
   return (
@@ -8,7 +7,7 @@ export default function TabBarBackground() {
       style={[
         StyleSheet.absoluteFill,
         {
-          backgroundColor: Colors.background,
+          backgroundColor: "#3E2542",
         },
       ]}
     />
