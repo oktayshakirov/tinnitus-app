@@ -29,6 +29,7 @@
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
+      "imageWidth": 250,
       "backgroundColor": "#5B3964"
     },
     "plugins": [
@@ -38,6 +39,7 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
+          "imageWidth": 250,
           "backgroundColor": "#5B3964"
         }
       ]

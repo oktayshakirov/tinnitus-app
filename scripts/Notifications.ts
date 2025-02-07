@@ -1,7 +1,9 @@
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
+import { db } from "../config/FirebaseConfig";
+import { collection, addDoc, setDoc, doc } from "firebase/firestore";
 
-export async function registerForPushNotificationsAsync() {
+export async function registerForPushNotificationsAsync(userId?: string) {
   if (!Device.isDevice) {
     alert("Must use a physical device for push notifications");
     return;
@@ -25,7 +27,14 @@ export async function registerForPushNotificationsAsync() {
       projectId: "274da90d-795f-4715-8c0e-f215c3dc85ee",
     })
   ).data;
+
   console.log("Expo Push Token:", token);
+
+  if (userId) {
+    await setDoc(doc(db, "pushTokens", userId), { token });
+  } else {
+    await addDoc(collection(db, "pushTokens"), { token });
+  }
 
   return token;
 }
