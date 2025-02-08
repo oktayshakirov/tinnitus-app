@@ -38,7 +38,11 @@ export default function HomeScreen() {
             style={styles.webview}
             injectedJavaScript={`window.isApp = true; true;`}
             onLoadStart={() => setLoading(true)}
-            onLoad={() => setLoading(false)}
+            onNavigationStateChange={(navState) => {
+              if (!navState.loading) {
+                setLoading(false);
+              }
+            }}
           />
         )}
         {loading && <Loader />}

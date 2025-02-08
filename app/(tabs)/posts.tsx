@@ -1,32 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  Platform,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
 import Loader from "@/components/ui/Loader";
-
-const WebPreview = ({
-  webViewKey,
-  onLoad,
-}: {
-  webViewKey: number;
-  onLoad: () => void;
-}) => (
-  <iframe
-    key={webViewKey}
-    src={`https://www.tinnitushelp.me/blog?isApp=true&refresh=${webViewKey}`}
-    style={{ width: "100%", height: "100vh", border: "none" }}
-    title="TinnitusHelp - Posts"
-    onLoad={onLoad}
-  />
-);
 
 export default function PostsScreen() {
   const { refreshCount } = useRefresh("posts");
@@ -42,8 +20,11 @@ export default function PostsScreen() {
     <View style={[styles.container, { backgroundColor: Colors.background }]}>
       <SafeAreaView style={styles.safeArea}>
         {Platform.OS === "web" ? (
-          <WebPreview
-            webViewKey={webViewKey.current}
+          <iframe
+            key={webViewKey.current}
+            src={`https://www.tinnitushelp.me/blog?isApp=true&refresh=${webViewKey.current}`}
+            style={{ width: "100%", height: "100vh", border: "none" }}
+            title="TinnitusHelp - Posts"
             onLoad={() => setLoading(false)}
           />
         ) : (
@@ -57,7 +38,11 @@ export default function PostsScreen() {
             style={styles.webview}
             injectedJavaScript={`window.isApp = true; true;`}
             onLoadStart={() => setLoading(true)}
-            onLoad={() => setLoading(false)}
+            onNavigationStateChange={(navState) => {
+              if (!navState.loading) {
+                setLoading(false);
+              }
+            }}
           />
         )}
         {loading && <Loader />}
