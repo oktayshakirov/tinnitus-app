@@ -45,16 +45,13 @@ export const sendNewPostNotification = onDocumentCreated(
   "posts/{postId}",
   async (event) => {
     const snap = event.data!;
-    const postData = snap.data() as
-      | { title?: string; url?: string }
-      | undefined;
+    const postData = snap.data() as { title?: string } | undefined;
     const postTitle = postData?.title || "New Post";
-    const postUrl = postData?.url || "https://www.tinnitushelp.me/blog/";
 
     const title = "New Post on Tinnitus Help";
     const body = `Check out the new post: ${postTitle}`;
 
-    await sendPushNotification(title, body, { url: postUrl });
+    await sendPushNotification(title, body);
   }
 );
 
@@ -63,14 +60,13 @@ export const sendNewSoundNotification = onDocumentCreated(
   async (event) => {
     const snap = event.data!;
     const soundData = snap.data() as
-      | { title?: string; name?: string; url?: string }
+      | { title?: string; name?: string }
       | undefined;
     const soundTitle = soundData?.title || soundData?.name || "New Sound";
-    const soundUrl = soundData?.url || "https://www.tinnitushelp.me/zen/";
 
     const title = "New Sound on Tinnitus Help";
     const body = `Check out the new sound: ${soundTitle}`;
 
-    await sendPushNotification(title, body, { url: soundUrl });
+    await sendPushNotification(title, body);
   }
 );
