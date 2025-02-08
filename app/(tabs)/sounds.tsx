@@ -1,73 +1,49 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  Platform,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
 import Loader from "@/components/ui/Loader";
 
-const WebPreview = ({
-  webViewKey,
-  onLoad,
-}: {
-  webViewKey: number;
-  onLoad: () => void;
-}) => (
-  <iframe
-    key={webViewKey}
-    src={`https://www.tinnitushelp.me/zen?isApp=true&refresh=${webViewKey}`}
-    style={{ width: "100%", height: "100vh", border: "none" }}
-    title="TinnitusHelp - Sounds"
-    onLoad={onLoad}
-  />
-);
-
 export default function SoundsScreen() {
   const { refreshCount } = useRefresh("sounds");
-  const [webViewKey, setWebViewKey] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const webviewRef = useRef<WebView>(null);
+  const webViewKey = useRef(0);
 
   useEffect(() => {
-    setWebViewKey((prev) => prev + 1);
+    webViewKey.current += 1;
     setLoading(true);
   }, [refreshCount]);
 
-  const handleLoadEnd = () => {
-    setLoading(false);
-    setRefreshing(false);
-  };
-
-  const webUri = `https://www.tinnitushelp.me/zen?isApp=true&refresh=${webViewKey}`;
+  const webUri = `https://www.tinnitushelp.me/zen?isApp=true&refresh=${webViewKey.current}`;
 
   return (
     <View style={[styles.container, { backgroundColor: Colors.background }]}>
       <SafeAreaView style={styles.safeArea}>
         {Platform.OS === "web" ? (
-          <WebPreview webViewKey={webViewKey} onLoad={handleLoadEnd} />
+          <iframe
+            key={webViewKey.current}
+            src={webUri}
+            style={{ width: "100%", height: "100vh", border: "none" }}
+            title="TinnitusHelp - Sounds"
+            onLoad={() => setLoading(false)}
+          />
         ) : (
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: 30 }}
-          >
-            <WebView
-              key={webViewKey}
-              ref={webviewRef}
-              source={{ uri: webUri }}
-              cacheEnabled={true}
-              domStorageEnabled={true}
-              style={styles.webview}
-              injectedJavaScript={`window.isApp = true; true;`}
-              onLoadStart={() => setLoading(true)}
-              onLoadEnd={handleLoadEnd}
-            />
-          </ScrollView>
+          <WebView
+            key={webViewKey.current}
+            source={{ uri: webUri }}
+            cacheEnabled
+            domStorageEnabled
+            style={styles.webview}
+            injectedJavaScript={`window.isApp = true; true;`}
+            onLoadStart={() => setLoading(true)}
+            onNavigationStateChange={(navState) => {
+              if (!navState.loading) {
+                setLoading(false);
+              }
+            }}
+          />
         )}
         {loading && <Loader />}
       </SafeAreaView>
