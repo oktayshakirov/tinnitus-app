@@ -1,13 +1,12 @@
 import { Slot } from "expo-router";
 import { RefreshProvider } from "@/contexts/RefreshContext";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "@/scripts/Notifications";
 import { EventSubscription } from "expo-modules-core";
-import BannerAd from "@/components/ads/BannerAd";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -62,11 +61,8 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <RefreshProvider>
         <ThemeProvider value={DefaultTheme}>
-          <StatusBar style="light" />
-          <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
-            <BannerAd />
-            <Slot />
-          </SafeAreaView>
+          <Slot />
+          <StatusBar style="auto" />
         </ThemeProvider>
       </RefreshProvider>
     </SafeAreaProvider>

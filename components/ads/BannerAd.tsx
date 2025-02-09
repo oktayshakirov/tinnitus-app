@@ -11,23 +11,29 @@ const USE_TEST_ADS = true;
 const productionAdUnitIDs = Platform.select({
   ios: "ca-app-pub-5852582960793521/1981176406",
   android: "ca-app-pub-5852582960793521/7251752754",
-})!;
+});
 
 const testAdUnitID = TestIds.BANNER;
-const adUnitID: string = USE_TEST_ADS ? testAdUnitID : productionAdUnitIDs;
+const adUnitID: string = USE_TEST_ADS ? testAdUnitID : productionAdUnitIDs!;
 
-const BannerAdComponent = () => (
-  <View>
-    <BannerAd
-      unitId={adUnitID}
-      size={BannerAdSize.FULL_BANNER}
-      requestOptions={{
-        requestNonPersonalizedAdsOnly: false,
-      }}
-      onAdLoaded={() => console.log("Ad loaded!")}
-      onAdFailedToLoad={(error) => console.error("Ad failed to load:", error)}
-    />
-  </View>
-);
+const BannerAdComponent = () => {
+  if (Platform.OS === "web") {
+    return null;
+  }
+
+  return (
+    <View>
+      <BannerAd
+        unitId={adUnitID}
+        size={BannerAdSize.FULL_BANNER}
+        requestOptions={{
+          requestNonPersonalizedAdsOnly: false,
+        }}
+        onAdLoaded={() => console.log("Ad loaded!")}
+        onAdFailedToLoad={(error) => console.error("Ad failed to load:", error)}
+      />
+    </View>
+  );
+};
 
 export default BannerAdComponent;
