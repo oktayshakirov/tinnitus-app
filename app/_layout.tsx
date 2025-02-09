@@ -1,9 +1,9 @@
 import { Slot } from "expo-router";
 import { RefreshProvider } from "@/contexts/RefreshContext";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "@/scripts/Notifications";
 import { EventSubscription } from "expo-modules-core";
@@ -62,9 +62,11 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <RefreshProvider>
         <ThemeProvider value={DefaultTheme}>
-          <Slot />
-          <BannerAd />
-          <StatusBar style="auto" />
+          <StatusBar style="light" />
+          <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
+            <BannerAd />
+            <Slot />
+          </SafeAreaView>
         </ThemeProvider>
       </RefreshProvider>
     </SafeAreaProvider>
