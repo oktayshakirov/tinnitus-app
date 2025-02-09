@@ -12,12 +12,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.shadev.tinnitushelpme"
+      "bundleIdentifier": "com.shadev.tinnitushelpme",
+      "googleMobileAdsAppId": "ca-app-pub-5852582960793521~4990483127"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#5B3964"
+        "backgroundColor": "#5B3964",
+        "googleMobileAdsAppId": "ca-app-pub-5852582960793521~2742534243"
       },
       "package": "com.shadev.tinnitushelpme"
     },
