@@ -1,12 +1,15 @@
 import { Slot } from "expo-router";
 import { RefreshProvider } from "@/contexts/RefreshContext";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { Platform, View, StyleSheet } from "react-native";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "@/scripts/Notifications";
 import { EventSubscription } from "expo-modules-core";
+import BannerAd from "@/components/ads/BannerAd";
+import { Colors } from "@/constants/Colors";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -59,12 +62,45 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <RefreshProvider>
-        <ThemeProvider value={DefaultTheme}>
-          <Slot />
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </RefreshProvider>
+      <View style={styles.appContainer}>
+        {Platform.OS === "ios" && <View style={styles.statusBarBackground} />}
+        <RefreshProvider>
+          <ThemeProvider value={DefaultTheme}>
+            <StatusBar
+              backgroundColor={Colors.background}
+              translucent={true}
+              style="auto"
+            />
+            <SafeAreaView
+              style={styles.safeArea}
+              edges={["top", "left", "right"]}
+            >
+              <BannerAd />
+              <Slot />
+            </SafeAreaView>
+          </ThemeProvider>
+        </RefreshProvider>
+      </View>
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  appContainer: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  statusBarBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 44,
+    backgroundColor: Colors.background,
+    zIndex: 10,
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+});

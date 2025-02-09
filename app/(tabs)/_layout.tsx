@@ -18,7 +18,6 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "600",
-          paddingBottom: 15,
         },
         tabBarStyle: Platform.select({
           ios: { position: "absolute" },
