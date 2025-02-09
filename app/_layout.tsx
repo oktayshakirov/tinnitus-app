@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "@/scripts/Notifications";
 import { EventSubscription } from "expo-modules-core";
+import BannerAd from "@/components/ads/BannerAd";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -62,6 +63,7 @@ export default function RootLayout() {
       <RefreshProvider>
         <ThemeProvider value={DefaultTheme}>
           <Slot />
+          <BannerAd />
           <StatusBar style="auto" />
         </ThemeProvider>
       </RefreshProvider>
