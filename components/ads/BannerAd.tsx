@@ -1,5 +1,5 @@
 import React from "react";
-import { Platform, View } from "react-native";
+import { Platform } from "react-native";
 import {
   BannerAd,
   BannerAdSize,
@@ -17,17 +17,15 @@ const testAdUnitID = TestIds.BANNER;
 const adUnitID: string = USE_TEST_ADS ? testAdUnitID : productionAdUnitIDs;
 
 const BannerAdComponent = () => (
-  <View>
-    <BannerAd
-      unitId={adUnitID}
-      size={BannerAdSize.FULL_BANNER}
-      requestOptions={{
-        requestNonPersonalizedAdsOnly: false,
-      }}
-      onAdLoaded={() => console.log("Ad loaded!")}
-      onAdFailedToLoad={(error) => console.error("Ad failed to load:", error)}
-    />
-  </View>
+  <BannerAd
+    unitId={adUnitID}
+    size={BannerAdSize.FULL_BANNER}
+    requestOptions={{
+      requestNonPersonalizedAdsOnly: false,
+    }}
+    onAdLoaded={() => console.log("Ad loaded!")}
+    onAdFailedToLoad={(error) => console.error("Ad failed to load:", error)}
+  />
 );
 
 export default BannerAdComponent;
