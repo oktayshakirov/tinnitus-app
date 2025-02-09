@@ -9,6 +9,7 @@ const Loader = () => {
         source={require("@/assets/animations/loader.json")}
         autoPlay
         loop
+        style={styles.lottie}
       />
     </View>
   );
@@ -23,6 +24,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
+  },
+  lottie: {
+    width: 100,
+    height: 100,
   },
 });
 
