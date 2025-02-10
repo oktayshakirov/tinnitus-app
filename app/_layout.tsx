@@ -10,6 +10,8 @@ import { registerForPushNotificationsAsync } from "@/scripts/Notifications";
 import { EventSubscription } from "expo-modules-core";
 import BannerAd from "@/components/ads/BannerAd";
 import { Colors } from "@/constants/Colors";
+import ConsentDialog from "@/components/ads/ConsentDialog";
+import initialize from "react-native-google-mobile-ads";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -25,6 +27,9 @@ export default function RootLayout() {
   const responseListener = useRef<EventSubscription | null>(null);
 
   useEffect(() => {
+    const adapterStatuses = initialize();
+    console.log("Ads initialized:", adapterStatuses);
+
     registerForPushNotificationsAsync()
       .then((token) => {
         if (token) {
@@ -76,6 +81,7 @@ export default function RootLayout() {
               edges={["top", "left", "right"]}
             >
               <BannerAd />
+              <ConsentDialog />
               <Slot />
             </SafeAreaView>
           </ThemeProvider>
