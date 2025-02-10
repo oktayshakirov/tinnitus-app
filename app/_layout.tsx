@@ -91,11 +91,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   statusBarBackground: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 44,
     backgroundColor: Colors.background,
     zIndex: 10,
   },

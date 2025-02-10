@@ -6,7 +6,7 @@ import {
   TestIds,
 } from "react-native-google-mobile-ads";
 
-const USE_TEST_ADS = true;
+const USE_TEST_ADS = false;
 
 const productionAdUnitIDs = Platform.select({
   ios: "ca-app-pub-5852582960793521/1981176406",
