@@ -49,7 +49,7 @@ export const sendNewPostNotification = onDocumentCreated(
     const postTitle = postData?.title || "New Post";
 
     const title = "New Post on TinnitusHelp.me:";
-    const body = `Check out: "${postTitle}"!`;
+    const body = `${postTitle}`;
 
     await sendPushNotification(title, body);
   }
@@ -65,7 +65,7 @@ export const sendNewSoundNotification = onDocumentCreated(
     const soundTitle = soundData?.title || soundData?.name || "New Sound";
 
     const title = "New Sound on TinnitusHelp.me:";
-    const body = `Check out: "${soundTitle}"!`;
+    const body = `${soundTitle}`;
 
     await sendPushNotification(title, body);
   }
