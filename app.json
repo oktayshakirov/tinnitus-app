@@ -4,7 +4,7 @@
     "slug": "tinnitus-help-me",
     "owner": "oktay.shakirov",
     "projectId": "274da90d-795f-4715-8c0e-f215c3dc85ee",
-    "version": "2.0.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "TinnitusHelp.me",
@@ -150,7 +150,7 @@
     },
     "android": {
       "package": "com.shadev.tinnitushelpme",
-      "versionCode": 2,
+      "versionCode": 3,
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-5852582960793521~2742534243"
       },
