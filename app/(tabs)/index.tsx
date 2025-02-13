@@ -1,18 +1,18 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
-import Loader from "@/components/ui/Loader";
+import { useLoader } from "@/contexts/LoaderContext";
 
 export default function HomeScreen() {
   const { refreshCount } = useRefresh("home");
-  const [loading, setLoading] = useState(true);
+  const { showLoader, hideLoader } = useLoader();
   const webViewKey = useRef(0);
 
   useEffect(() => {
     webViewKey.current += 1;
-    setLoading(true);
+    showLoader();
   }, [refreshCount]);
 
   return (
@@ -23,7 +23,7 @@ export default function HomeScreen() {
           src={`https://www.tinnitushelp.me/?isApp=true&refresh=${webViewKey.current}`}
           style={{ width: "100%", height: "100vh", border: "none" }}
           title="TinnitusHelp - Home"
-          onLoad={() => setLoading(false)}
+          onLoad={() => hideLoader()}
         />
       ) : (
         <WebView
@@ -35,15 +35,14 @@ export default function HomeScreen() {
           domStorageEnabled
           style={styles.webview}
           injectedJavaScript={`window.isApp = true; true;`}
-          onLoadStart={() => setLoading(true)}
+          onLoadStart={showLoader}
           onNavigationStateChange={(navState) => {
             if (!navState.loading) {
-              setLoading(false);
+              hideLoader();
             }
           }}
         />
       )}
-      {loading && <Loader />}
     </View>
   );
 }

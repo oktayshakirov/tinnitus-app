@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Platform } from "react-native";
+import { Platform, View, StyleSheet } from "react-native";
 import {
   BannerAd,
   BannerAdSize,
@@ -29,16 +29,25 @@ const BannerAdComponent = () => {
   const requestNonPersonalizedAdsOnly = consent === "granted" ? false : true;
 
   return (
-    <BannerAd
-      unitId={adUnitID}
-      size={BannerAdSize.FULL_BANNER}
-      requestOptions={{
-        requestNonPersonalizedAdsOnly: requestNonPersonalizedAdsOnly,
-      }}
-      onAdLoaded={() => console.log("Ad loaded!")}
-      onAdFailedToLoad={(error) => console.error("Ad failed to load:", error)}
-    />
+    <View style={styles.bannerContainer}>
+      <BannerAd
+        unitId={adUnitID}
+        size={BannerAdSize.ADAPTIVE_BANNER}
+        requestOptions={{
+          requestNonPersonalizedAdsOnly: requestNonPersonalizedAdsOnly,
+        }}
+        onAdLoaded={() => console.log("Ad loaded!")}
+        onAdFailedToLoad={(error) => console.error("Ad failed to load:", error)}
+      />
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  bannerContainer: {
+    width: "100%",
+    alignItems: "center",
+  },
+});
 
 export default BannerAdComponent;

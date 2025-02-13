@@ -12,6 +12,7 @@ import BannerAd from "@/components/ads/BannerAd";
 import { Colors } from "@/constants/Colors";
 import ConsentDialog from "@/components/ads/ConsentDialog";
 import initialize from "react-native-google-mobile-ads";
+import { LoaderProvider } from "@/contexts/LoaderContext";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -69,23 +70,25 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <View style={styles.appContainer}>
         {Platform.OS === "ios" && <View style={styles.statusBarBackground} />}
-        <RefreshProvider>
-          <ThemeProvider value={DefaultTheme}>
-            <StatusBar
-              backgroundColor={Colors.background}
-              translucent={true}
-              style="auto"
-            />
-            <SafeAreaView
-              style={styles.safeArea}
-              edges={["top", "left", "right"]}
-            >
-              <BannerAd />
-              <ConsentDialog />
-              <Slot />
-            </SafeAreaView>
-          </ThemeProvider>
-        </RefreshProvider>
+        <LoaderProvider>
+          <RefreshProvider>
+            <ThemeProvider value={DefaultTheme}>
+              <StatusBar
+                backgroundColor={Colors.background}
+                translucent={true}
+                style="auto"
+              />
+              <SafeAreaView
+                style={styles.safeArea}
+                edges={["top", "left", "right"]}
+              >
+                <BannerAd />
+                <ConsentDialog />
+                <Slot />
+              </SafeAreaView>
+            </ThemeProvider>
+          </RefreshProvider>
+        </LoaderProvider>
       </View>
     </SafeAreaProvider>
   );
