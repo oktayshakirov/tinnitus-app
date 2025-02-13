@@ -1,18 +1,18 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
-import Loader from "@/components/ui/Loader";
+import { useLoader } from "@/contexts/LoaderContext";
 
 export default function SoundsScreen() {
   const { refreshCount } = useRefresh("sounds");
-  const [loading, setLoading] = useState(true);
+  const { showLoader, hideLoader } = useLoader();
   const webViewKey = useRef(0);
 
   useEffect(() => {
     webViewKey.current += 1;
-    setLoading(true);
+    showLoader();
   }, [refreshCount]);
 
   const webUri = `https://www.tinnitushelp.me/zen?isApp=true&refresh=${webViewKey.current}`;
@@ -25,7 +25,7 @@ export default function SoundsScreen() {
           src={webUri}
           style={{ width: "100%", height: "100vh", border: "none" }}
           title="TinnitusHelp - Sounds"
-          onLoad={() => setLoading(false)}
+          onLoad={() => hideLoader()}
         />
       ) : (
         <WebView
@@ -35,15 +35,14 @@ export default function SoundsScreen() {
           domStorageEnabled
           style={styles.webview}
           injectedJavaScript={`window.isApp = true; true;`}
-          onLoadStart={() => setLoading(true)}
+          onLoadStart={showLoader}
           onNavigationStateChange={(navState) => {
             if (!navState.loading) {
-              setLoading(false);
+              hideLoader();
             }
           }}
         />
       )}
-      {loading && <Loader />}
     </View>
   );
 }
