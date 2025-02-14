@@ -150,7 +150,7 @@
     },
     "android": {
       "package": "com.shadev.tinnitushelpme",
-      "versionCode": 3,
+      "versionCode": 4,
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-5852582960793521~2742534243"
       },
