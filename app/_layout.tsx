@@ -76,7 +76,7 @@ export default function RootLayout() {
               <StatusBar
                 backgroundColor={Colors.background}
                 translucent={true}
-                style="auto"
+                style="light"
               />
               <SafeAreaView
                 style={styles.safeArea}
