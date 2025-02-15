@@ -54,14 +54,14 @@ const ConsentDialog = ({ onConsentCompleted }: ConsentDialogProps) => {
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
-          <Text style={styles.title}>Personalize Your Experience</Text>
+          <Text style={styles.title}>Dear User</Text>
           <Text style={styles.message}>
             To keep TinnitusHelp.me free and provide you with the best
-            experience, we rely on personalized ads and push notifications.
-            Allowing personalized ads means you’ll see content and offers that
-            match your interests, while enabling push notifications keeps you
-            updated with every new post or sound we add. Your privacy is our
-            priority, and your data is handled securely.
+            experience, we rely on personalized ads and push notifications. Our
+            partners will collect data which means you’ll see ads that match
+            your interests, while enabling notifications keeps you updated with
+            every new post or sound we add. Your privacy is our priority and
+            your data is handled securely.
           </Text>
           <View style={styles.buttonContainer}>
             {Platform.OS === "android" ? (
