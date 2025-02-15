@@ -11,35 +11,38 @@ import * as TrackingTransparency from "expo-tracking-transparency";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Colors } from "@/constants/Colors";
 
-const ConsentDialog = () => {
+type ConsentDialogProps = {
+  onConsentCompleted: () => void;
+};
+
+const ConsentDialog = ({ onConsentCompleted }: ConsentDialogProps) => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     AsyncStorage.getItem("trackingConsent").then((storedConsent) => {
       if (storedConsent === null) {
         setModalVisible(true);
+      } else {
+        onConsentCompleted();
       }
     });
   }, []);
 
-  const handleContinue = async () => {
-    await AsyncStorage.setItem("trackingConsent", "shown");
+  const handleAllow = async () => {
+    await AsyncStorage.setItem("trackingConsent", "granted");
     setModalVisible(false);
     if (Platform.OS === "ios") {
       const { status } =
         await TrackingTransparency.requestTrackingPermissionsAsync();
       console.log("Tracking permission status:", status);
     }
+    onConsentCompleted();
   };
 
-  const handleAgree = async () => {
-    await AsyncStorage.setItem("trackingConsent", "granted");
-    setModalVisible(false);
-  };
-
-  const handleDisagree = async () => {
+  const handleDontAllow = async () => {
     await AsyncStorage.setItem("trackingConsent", "denied");
     setModalVisible(false);
+    onConsentCompleted();
   };
 
   return (
@@ -51,32 +54,32 @@ const ConsentDialog = () => {
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
-          <Text style={styles.title}>Privacy and Data Tracking</Text>
+          <Text style={styles.title}>Personalize Your Experience</Text>
           <Text style={styles.message}>
-            Dear user, we care about your privacy and data security. At
-            TinnitusHelp.me, we keep this app free by showing ads. Our partners
-            may collect data to deliver personalized ads, but only if you agree.
-            {Platform.OS === "ios"
-              ? " Please press 'Continue' to proceed."
-              : " Please select an option below."}
+            To keep TinnitusHelp.me free and provide you with the best
+            experience, we rely on personalized ads and push notifications.
+            Allowing personalized ads means you’ll see content and offers that
+            match your interests, while enabling push notifications keeps you
+            updated with every new post or sound we add. Your privacy is our
+            priority, and your data is handled securely.
           </Text>
           <View style={styles.buttonContainer}>
             {Platform.OS === "android" ? (
               <>
                 <TouchableOpacity
-                  onPress={handleDisagree}
+                  onPress={handleDontAllow}
                   style={styles.button}
                 >
-                  <Text style={styles.buttonText}>I Don't Agree</Text>
+                  <Text style={styles.buttonText}>Don't Allow</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={handleAgree} style={styles.button}>
+                <TouchableOpacity onPress={handleAllow} style={styles.button}>
                   <Text style={[styles.buttonText, styles.agreeButton]}>
-                    I Agree
+                    Allow
                   </Text>
                 </TouchableOpacity>
               </>
             ) : (
-              <TouchableOpacity onPress={handleContinue} style={styles.button}>
+              <TouchableOpacity onPress={handleAllow} style={styles.button}>
                 <Text style={[styles.buttonText, styles.continueButton]}>
                   Continue
                 </Text>
@@ -104,15 +107,17 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     marginBottom: 10,
     color: Colors.text,
+    textAlign: "center",
   },
   message: {
     marginBottom: 15,
     fontSize: 16,
     color: Colors.text,
+    textAlign: "left",
   },
   buttonContainer: {
     flexDirection: "row",
