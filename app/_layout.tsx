@@ -6,13 +6,14 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import { Platform, View, StyleSheet } from "react-native";
 import * as Notifications from "expo-notifications";
-import { registerForPushNotificationsAsync } from "@/scripts/Notifications";
 import { EventSubscription } from "expo-modules-core";
 import BannerAd from "@/components/ads/BannerAd";
 import { Colors } from "@/constants/Colors";
 import ConsentDialog from "@/components/ads/ConsentDialog";
 import initialize from "react-native-google-mobile-ads";
 import { LoaderProvider } from "@/contexts/LoaderContext";
+// Import the helper from your utils directory
+import { getOrRegisterPushToken } from "@/utils/pushToken";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -31,7 +32,8 @@ export default function RootLayout() {
     const adapterStatuses = initialize();
     console.log("Ads initialized:", adapterStatuses);
 
-    registerForPushNotificationsAsync()
+    // Use our push token helper instead of directly calling registerForPushNotificationsAsync
+    getOrRegisterPushToken()
       .then((token) => {
         if (token) {
           setExpoPushToken(token);
