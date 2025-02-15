@@ -12,7 +12,6 @@ import { Colors } from "@/constants/Colors";
 import ConsentDialog from "@/components/ads/ConsentDialog";
 import initialize from "react-native-google-mobile-ads";
 import { LoaderProvider } from "@/contexts/LoaderContext";
-// Import the helper from your utils directory
 import { getOrRegisterPushToken } from "@/utils/pushToken";
 
 Notifications.setNotificationHandler({
@@ -31,8 +30,6 @@ export default function RootLayout() {
   useEffect(() => {
     const adapterStatuses = initialize();
     console.log("Ads initialized:", adapterStatuses);
-
-    // Use our push token helper instead of directly calling registerForPushNotificationsAsync
     getOrRegisterPushToken()
       .then((token) => {
         if (token) {
