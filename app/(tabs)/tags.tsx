@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { AppState, Platform, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
@@ -14,6 +14,16 @@ export default function SoundsScreen() {
     webViewKey.current += 1;
     showLoader();
   }, [refreshCount]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        webViewKey.current += 1;
+        showLoader();
+      }
+    });
+    return () => subscription.remove();
+  }, []);
 
   const webUri = `https://www.tinnitushelp.me/tags?isApp=true&refresh=${webViewKey.current}`;
 

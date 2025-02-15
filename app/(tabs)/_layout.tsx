@@ -30,7 +30,7 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons name="home" size={25} color={color} />
+            <MaterialIcons name="home" size={23} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} refreshKey="home" />,
         }}
@@ -41,7 +41,7 @@ export default function TabLayout() {
         options={{
           title: "Posts",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons name="quote-a-left" size={25} color={color} />
+            <MaterialIcons name="quote-a-left" size={23} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} refreshKey="posts" />,
         }}
@@ -52,7 +52,7 @@ export default function TabLayout() {
         options={{
           title: "Sounds",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons name="music-note" size={25} color={color} />
+            <MaterialIcons name="music-note" size={23} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} refreshKey="sounds" />,
         }}
@@ -63,7 +63,7 @@ export default function TabLayout() {
         options={{
           title: "Tags",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons name="hashtag" size={25} color={color} />
+            <MaterialIcons name="hashtag" size={23} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} refreshKey="tags" />,
         }}
