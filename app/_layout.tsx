@@ -24,24 +24,13 @@ Notifications.setNotificationHandler({
 
 export default function RootLayout() {
   const [expoPushToken, setExpoPushToken] = useState("");
+  const [consentCompleted, setConsentCompleted] = useState(false);
   const notificationListener = useRef<EventSubscription | null>(null);
   const responseListener = useRef<EventSubscription | null>(null);
 
   useEffect(() => {
     const adapterStatuses = initialize();
     console.log("Ads initialized:", adapterStatuses);
-    getOrRegisterPushToken()
-      .then((token) => {
-        if (token) {
-          setExpoPushToken(token);
-          console.log("Expo Push Token:", token);
-        } else {
-          console.warn("No Expo push token returned.");
-        }
-      })
-      .catch((error) => {
-        console.error("Error during push registration:", error);
-      });
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
@@ -65,6 +54,23 @@ export default function RootLayout() {
     };
   }, []);
 
+  useEffect(() => {
+    if (consentCompleted) {
+      getOrRegisterPushToken()
+        .then((token) => {
+          if (token) {
+            setExpoPushToken(token);
+            console.log("Expo Push Token:", token);
+          } else {
+            console.warn("No Expo push token returned.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error during push registration:", error);
+        });
+    }
+  }, [consentCompleted]);
+
   return (
     <SafeAreaProvider>
       <View style={styles.appContainer}>
@@ -82,7 +88,9 @@ export default function RootLayout() {
                 edges={["top", "left", "right"]}
               >
                 <BannerAd />
-                <ConsentDialog />
+                <ConsentDialog
+                  onConsentCompleted={() => setConsentCompleted(true)}
+                />
                 <Slot />
               </SafeAreaView>
             </ThemeProvider>
