@@ -87,7 +87,7 @@ export const sendNewPostNotification = onDocumentCreated(
       const snap = event.data!;
       const postData = snap.data() as { title?: string } | undefined;
       const postTitle = postData?.title || "New Post";
-      const title = "New Post on TinnitusHelp.me:";
+      const title = "New Post on TinnitusHelp.me";
       const body = postTitle;
 
       await sendPushNotification(title, body);
@@ -106,7 +106,7 @@ export const sendNewSoundNotification = onDocumentCreated(
         | { title?: string; name?: string }
         | undefined;
       const soundTitle = soundData?.title || soundData?.name || "New Sound";
-      const title = "New Sound on TinnitusHelp.me:";
+      const title = "New Sound on TinnitusHelp.me";
       const body = soundTitle;
 
       await sendPushNotification(title, body);
