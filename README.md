@@ -4,7 +4,7 @@ A comprehensive and user-friendly iOS/Android app built with Expo, offering a he
 
 ## Demo
 
-![Desktop Demo](/assets/screenshots/Banner.jpg "Desktop Demo")
+![Desktop Demo](./assets/Screenshots/Banner.jpg "Desktop Demo")
 
 <p align="center">
   <a href="https://www.TinnitusHelp.me/app"><strong>➥ Live Demo</strong></a>
