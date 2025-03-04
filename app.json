@@ -4,7 +4,7 @@
     "slug": "tinnitus-help-me",
     "owner": "oktay.shakirov",
     "projectId": "274da90d-795f-4715-8c0e-f215c3dc85ee",
-    "version": "2.4.0",
+    "version": "2.5.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "TinnitusHelp.me",
@@ -151,7 +151,7 @@
     },
     "android": {
       "package": "com.shadev.tinnitushelpme",
-      "versionCode": 4,
+      "versionCode": 5,
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-5852582960793521~2742534243"
       },
@@ -165,20 +165,13 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "imageWidth": 250,
-      "backgroundColor": "#5B3964"
-    },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "resizeMode": "contain",
-          "imageWidth": 250,
+          "resizeMode": "cover",
           "backgroundColor": "#5B3964"
         }
       ],
