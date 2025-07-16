@@ -4,7 +4,12 @@ import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
-import { Platform, View, StyleSheet } from "react-native";
+import {
+  Platform,
+  View,
+  StyleSheet,
+  TouchableWithoutFeedback,
+} from "react-native";
 import * as Notifications from "expo-notifications";
 import { EventSubscription } from "expo-modules-core";
 import BannerAd from "@/components/ads/BannerAd";
@@ -13,6 +18,8 @@ import ConsentDialog from "@/components/ads/ConsentDialog";
 import initialize from "react-native-google-mobile-ads";
 import { LoaderProvider } from "@/contexts/LoaderContext";
 import { getOrRegisterPushToken } from "@/utils/pushToken";
+import { initializeInterstitial } from "@/components/ads/InterstitialAd";
+import { loadAppOpenAd } from "@/components/ads/AppOpenAd";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -31,6 +38,8 @@ export default function RootLayout() {
   useEffect(() => {
     const adapterStatuses = initialize();
     console.log("Ads initialized:", adapterStatuses);
+    initializeInterstitial();
+    loadAppOpenAd();
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
@@ -78,11 +87,7 @@ export default function RootLayout() {
         <LoaderProvider>
           <RefreshProvider>
             <ThemeProvider value={DefaultTheme}>
-              <StatusBar
-                backgroundColor={Colors.background}
-                translucent={true}
-                style="light"
-              />
+              <StatusBar backgroundColor={Colors.background} style="light" />
               <SafeAreaView
                 style={styles.safeArea}
                 edges={["top", "left", "right"]}

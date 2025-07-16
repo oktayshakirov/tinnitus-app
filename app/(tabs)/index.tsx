@@ -1,17 +1,30 @@
 import React, { useRef, useEffect, useState } from "react";
-import { AppState, Platform, StyleSheet, View } from "react-native";
+import { AppState, Platform, StyleSheet, View, Linking } from "react-native";
 import { WebView } from "react-native-webview";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
 import { useLoader } from "@/contexts/LoaderContext";
+import { useGlobalAds } from "@/components/ads/adsManager";
+import { Pressable } from "react-native";
 
 export default function HomeScreen() {
   const { refreshCount } = useRefresh("home");
   const { showLoader, hideLoader } = useLoader();
   const webViewRef = useRef<WebView | null>(null);
   const [webViewKey, setWebViewKey] = useState(0);
-  const defaultUrl = "https://www.tinnitushelp.me/?isApp=true";
+  const defaultUrl = "https://www.tinnitushelp.me/";
   const [currentUrl, setCurrentUrl] = useState(defaultUrl);
+
+  const injectedJavaScript = `
+  localStorage.setItem('isApp', 'true');
+  window.addEventListener('click', function() {
+    window.ReactNativeWebView.postMessage('ad');
+  });
+
+  true;
+`;
+
+  const { handleGlobalPress } = useGlobalAds();
 
   useEffect(() => {
     setCurrentUrl(defaultUrl);
@@ -36,6 +49,15 @@ export default function HomeScreen() {
     }
   };
 
+  const handleShouldStartLoadWithRequest = (request: any) => {
+    const { url } = request;
+    if (!url.includes("tinnitushelp.me")) {
+      Linking.openURL(url);
+      return false;
+    }
+    return true;
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: Colors.background }]}>
       {Platform.OS === "web" ? (
@@ -43,21 +65,34 @@ export default function HomeScreen() {
           key={webViewKey}
           src={currentUrl}
           style={{ width: "100%", height: "100vh", border: "none" }}
-          title="TinnitusHelp - Home"
+          title="TinnitusHelp.me - Home"
           onLoad={hideLoader}
         />
       ) : (
-        <WebView
-          ref={webViewRef}
-          key={webViewKey}
-          source={{ uri: currentUrl }}
-          cacheEnabled
-          domStorageEnabled
-          style={styles.webview}
-          injectedJavaScript={`window.isApp = true; true;`}
-          onLoadStart={showLoader}
-          onNavigationStateChange={handleNavigationStateChange}
-        />
+        <>
+          <WebView
+            ref={webViewRef}
+            key={webViewKey}
+            source={{ uri: currentUrl }}
+            cacheEnabled
+            domStorageEnabled
+            style={styles.webview}
+            injectedJavaScript={injectedJavaScript}
+            onMessage={(event) => {
+              if (event.nativeEvent.data === "ad") {
+                handleGlobalPress();
+              }
+            }}
+            onLoadStart={showLoader}
+            onNavigationStateChange={handleNavigationStateChange}
+            onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
+          />
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={handleGlobalPress}
+            pointerEvents="box-none"
+          />
+        </>
       )}
     </View>
   );
@@ -70,6 +105,6 @@ const styles = StyleSheet.create({
   webview: {
     flex: 1,
     backgroundColor: Colors.background,
-    marginBottom: Platform.OS === "android" ? -70 : 0,
+    marginBottom: Platform.OS === "android" ? -65 : 65,
   },
 });
