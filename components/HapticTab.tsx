@@ -16,7 +16,7 @@ export function HapticTab(props: HapticTabProps) {
   const currentRouteIndex = useNavigationState((state) => state?.index ?? 0);
 
   const getTabIndex = (key: string) => {
-    const tabOrder = ["home", "posts", "exchanges", "ogs", "tools"];
+    const tabOrder = ["home", "posts", "sounds", "tags"];
     return tabOrder.indexOf(key);
   };
 
