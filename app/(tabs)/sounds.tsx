@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { AppState, Platform, StyleSheet, View, Linking } from "react-native";
+import { AppState, Platform, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
 import { useLoader } from "@/contexts/LoaderContext";
 import { useGlobalAds } from "@/components/ads/adsManager";
 import { Pressable } from "react-native";
+import { openBrowserAsync } from "expo-web-browser";
 
 export default function SoundsScreen() {
   const { refreshCount } = useRefresh("sounds");
@@ -52,7 +53,7 @@ export default function SoundsScreen() {
   const handleShouldStartLoadWithRequest = (request: any) => {
     const { url } = request;
     if (!url.includes("tinnitushelp.me")) {
-      Linking.openURL(url);
+      openBrowserAsync(url);
       return false;
     }
     return true;
