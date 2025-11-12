@@ -4,12 +4,7 @@ import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Platform,
-  View,
-  StyleSheet,
-  TouchableWithoutFeedback,
-} from "react-native";
+import { Platform, View, StyleSheet } from "react-native";
 import * as Notifications from "expo-notifications";
 import { EventSubscription } from "expo-modules-core";
 import BannerAd from "@/components/ads/BannerAd";
@@ -17,17 +12,27 @@ import { Colors } from "@/constants/Colors";
 import ConsentDialog from "@/components/ads/ConsentDialog";
 import initialize from "react-native-google-mobile-ads";
 import { LoaderProvider } from "@/contexts/LoaderContext";
+import {
+  OnboardingProvider,
+  useOnboarding,
+} from "@/contexts/OnboardingContext";
 import { getOrRegisterPushToken } from "@/utils/pushToken";
 import { initializeInterstitial } from "@/components/ads/InterstitialAd";
 import { loadAppOpenAd } from "@/components/ads/AppOpenAd";
+import OnboardingWrapper from "@/components/OnboardingWrapper";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+function AdInitializer() {
+  const { isOnboardingActive, isLoading } = useOnboarding();
+
+  useEffect(() => {
+    if (!isOnboardingActive && !isLoading) {
+      initializeInterstitial();
+      loadAppOpenAd();
+    }
+  }, [isOnboardingActive, isLoading]);
+
+  return null;
+}
 
 export default function RootLayout() {
   const [expoPushToken, setExpoPushToken] = useState("");
@@ -36,29 +41,20 @@ export default function RootLayout() {
   const responseListener = useRef<EventSubscription | null>(null);
 
   useEffect(() => {
-    const adapterStatuses = initialize();
-    console.log("Ads initialized:", adapterStatuses);
-    initializeInterstitial();
-    loadAppOpenAd();
+    initialize();
 
     notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        console.log("Notification Received:", notification);
-      });
+      Notifications.addNotificationReceivedListener(() => {});
 
     responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("Notification Clicked:", response);
-      });
+      Notifications.addNotificationResponseReceivedListener(() => {});
 
     return () => {
       if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(
-          notificationListener.current
-        );
+        notificationListener.current.remove();
       }
       if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
+        responseListener.current.remove();
       }
     };
   }, []);
@@ -80,29 +76,45 @@ export default function RootLayout() {
     }
   }, [consentCompleted]);
 
+  const theme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: Colors.background,
+      card: Colors.background,
+      text: Colors.text,
+      primary: Colors.activeIcon,
+    },
+  };
+
   return (
-    <SafeAreaProvider>
-      <View style={styles.appContainer}>
-        {Platform.OS === "ios" && <View style={styles.statusBarBackground} />}
-        <LoaderProvider>
-          <RefreshProvider>
-            <ThemeProvider value={DefaultTheme}>
-              <StatusBar backgroundColor={Colors.background} style="light" />
-              <SafeAreaView
-                style={styles.safeArea}
-                edges={["top", "left", "right"]}
-              >
-                <BannerAd />
-                <ConsentDialog
-                  onConsentCompleted={() => setConsentCompleted(true)}
-                />
-                <Slot />
-              </SafeAreaView>
-            </ThemeProvider>
-          </RefreshProvider>
-        </LoaderProvider>
-      </View>
-    </SafeAreaProvider>
+    <ThemeProvider value={theme}>
+      <SafeAreaProvider>
+        <View style={styles.appContainer}>
+          {Platform.OS === "ios" && <View style={styles.statusBarBackground} />}
+          <LoaderProvider>
+            <RefreshProvider>
+              <OnboardingProvider>
+                <StatusBar backgroundColor={Colors.background} style="light" />
+                <SafeAreaView
+                  style={styles.safeArea}
+                  edges={["top", "left", "right"]}
+                >
+                  <BannerAd />
+                  <ConsentDialog
+                    onConsentCompleted={() => setConsentCompleted(true)}
+                  />
+                  <AdInitializer />
+                  <OnboardingWrapper>
+                    <Slot />
+                  </OnboardingWrapper>
+                </SafeAreaView>
+              </OnboardingProvider>
+            </RefreshProvider>
+          </LoaderProvider>
+        </View>
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 }
 
