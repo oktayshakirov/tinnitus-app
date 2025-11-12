@@ -4,7 +4,6 @@
     "slug": "tinnitus-help-me",
     "owner": "oktay.shakirov",
     "projectId": "274da90d-795f-4715-8c0e-f215c3dc85ee",
-    "version": "3.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "TinnitusHelp.me",
@@ -13,7 +12,6 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.shadev.tinnitushelpme",
-      "buildNumber": "4",
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-5852582960793521~4990483127"
       },
@@ -151,7 +149,6 @@
     },
     "android": {
       "package": "com.shadev.tinnitushelpme",
-      "versionCode": 7,
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-5852582960793521~2742534243"
       },
@@ -185,7 +182,9 @@
             "buildToolsVersion": "35.0.0"
           }
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "extra": {
       "router": {
