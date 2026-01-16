@@ -7,12 +7,15 @@ import { useLoader } from "@/contexts/LoaderContext";
 import { useGlobalAds } from "@/components/ads/adsManager";
 import { Pressable } from "react-native";
 import { openBrowserAsync } from "expo-web-browser";
+import OfflineScreen from "@/components/OfflineScreen";
 
-export default function SoundsScreen() {
+export default function TagsScreen() {
   const { refreshCount } = useRefresh("tags");
   const { showLoader, hideLoader } = useLoader();
   const webViewRef = useRef<WebView | null>(null);
   const [webViewKey, setWebViewKey] = useState(0);
+  const [hasError, setHasError] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
   const defaultUrl = "https://www.tinnitushelp.me/tags?isApp=true";
   const [currentUrl, setCurrentUrl] = useState(defaultUrl);
 
@@ -30,23 +33,32 @@ export default function SoundsScreen() {
   useEffect(() => {
     setCurrentUrl(defaultUrl);
     setWebViewKey((prev) => prev + 1);
+    setHasError(false);
     showLoader();
   }, [refreshCount]);
 
   useEffect(() => {
+    if (hasError) {
+      hideLoader();
+    }
+  }, [hasError]);
+
+  useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextAppState) => {
-      if (nextAppState === "active") {
+      if (nextAppState === "active" && !hasError) {
         setWebViewKey((prev) => prev + 1);
         showLoader();
       }
     });
     return () => subscription.remove();
-  }, []);
+  }, [hasError]);
 
   const handleNavigationStateChange = (navState: any) => {
     if (!navState.loading) {
       setCurrentUrl(navState.url);
-      hideLoader();
+      if (!hasError) {
+        hideLoader();
+      }
     }
   };
 
@@ -58,6 +70,39 @@ export default function SoundsScreen() {
     }
     return true;
   };
+
+  const handleError = () => {
+    hideLoader();
+    setHasError(true);
+  };
+
+  const handleLoadEnd = () => {
+    if (!hasError) {
+      hideLoader();
+    }
+  };
+
+  const handleRetry = () => {
+    setIsRetrying(true);
+    setHasError(false);
+    setWebViewKey((prev) => prev + 1);
+    showLoader();
+    setTimeout(() => {
+      setIsRetrying(false);
+    }, 2000);
+  };
+
+  const renderError = () => {
+    return <OfflineScreen onRetry={handleRetry} isRetrying={isRetrying} />;
+  };
+
+  if (hasError) {
+    return (
+      <View style={[styles.container, { backgroundColor: Colors.background }]}>
+        <OfflineScreen onRetry={handleRetry} isRetrying={isRetrying} />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: Colors.background }]}>
@@ -85,6 +130,10 @@ export default function SoundsScreen() {
               }
             }}
             onLoadStart={showLoader}
+            onLoadEnd={handleLoadEnd}
+            onError={handleError}
+            onHttpError={handleError}
+            renderError={renderError}
             onNavigationStateChange={handleNavigationStateChange}
             onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
           />
