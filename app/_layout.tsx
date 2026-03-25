@@ -1,4 +1,4 @@
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import { RefreshProvider } from "@/contexts/RefreshContext";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -22,6 +22,8 @@ import { loadAppOpenAd } from "@/components/ads/AppOpenAd";
 import { useGlobalAds } from "@/components/ads/adsManager";
 import OnboardingWrapper from "@/components/OnboardingWrapper";
 import { RevenueCatProvider, useRevenueCat } from "@/contexts/RevenueCatContext";
+import { SavedContentProvider } from "@/contexts/SavedContentContext";
+import { WebViewProvider } from "@/contexts/WebViewContext";
 
 function AdInitializer() {
   const { isOnboardingActive, isLoading } = useOnboarding();
@@ -68,17 +70,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (consentCompleted) {
-      getOrRegisterPushToken()
-        .then((token) => {
-          if (token) {
-            console.log("Expo Push Token:", token);
-          } else {
-            console.warn("No Expo push token returned.");
-          }
-        })
-        .catch((error) => {
-          console.error("Error during push registration:", error);
-        });
+      void getOrRegisterPushToken();
     }
   }, [consentCompleted]);
 
@@ -101,23 +93,27 @@ export default function RootLayout() {
           <LoaderProvider>
             <RevenueCatProvider>
               <RefreshProvider>
-                <OnboardingProvider>
-                  <StatusBar backgroundColor={Colors.background} style="light" />
-                  <SafeAreaView
-                    style={styles.safeArea}
-                    edges={["top", "left", "right"]}
-                  >
-                    <BannerAd />
-                    <ConsentDialog
-                      onConsentCompleted={() => setConsentCompleted(true)}
-                    />
-                    <AdInitializer />
-                    <GlobalAdsManager />
-                    <OnboardingWrapper>
-                      <Slot />
-                    </OnboardingWrapper>
-                  </SafeAreaView>
-                </OnboardingProvider>
+                <SavedContentProvider>
+                  <WebViewProvider>
+                    <OnboardingProvider>
+                      <StatusBar backgroundColor={Colors.background} style="light" />
+                      <SafeAreaView
+                        style={styles.safeArea}
+                        edges={["top", "left", "right"]}
+                      >
+                        <BannerAd />
+                        <ConsentDialog
+                          onConsentCompleted={() => setConsentCompleted(true)}
+                        />
+                        <AdInitializer />
+                        <GlobalAdsManager />
+                        <OnboardingWrapper>
+                          <Stack screenOptions={{ headerShown: false }} />
+                        </OnboardingWrapper>
+                      </SafeAreaView>
+                    </OnboardingProvider>
+                  </WebViewProvider>
+                </SavedContentProvider>
               </RefreshProvider>
             </RevenueCatProvider>
           </LoaderProvider>

@@ -32,9 +32,7 @@ const ConsentDialog = ({ onConsentCompleted }: ConsentDialogProps) => {
     await AsyncStorage.setItem("trackingConsent", "granted");
     setModalVisible(false);
     if (Platform.OS === "ios") {
-      const { status } =
-        await TrackingTransparency.requestTrackingPermissionsAsync();
-      console.log("Tracking permission status:", status);
+      await TrackingTransparency.requestTrackingPermissionsAsync();
     }
     onConsentCompleted();
   };

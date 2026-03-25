@@ -5,10 +5,12 @@ import MaterialIcons from "@expo/vector-icons/Fontisto";
 import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
+import Header from "@/components/Header";
 
 export default function TabLayout() {
   return (
     <View style={{ flex: 1 }}>
+      <Header />
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors.activeIcon,

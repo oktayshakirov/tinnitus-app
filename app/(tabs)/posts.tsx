@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { AppState, Platform, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
+import { useFocusEffect } from "expo-router";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
 import { useLoader } from "@/contexts/LoaderContext";
@@ -8,10 +9,15 @@ import { useGlobalAds } from "@/components/ads/adsManager";
 import { Pressable } from "react-native";
 import { openBrowserAsync } from "expo-web-browser";
 import OfflineScreen from "@/components/OfflineScreen";
+import { useSavedContent } from "@/contexts/SavedContentContext";
+import { useWebView } from "@/contexts/WebViewContext";
 
 export default function PostsScreen() {
   const { refreshCount } = useRefresh("posts");
   const { showLoader, hideLoader } = useLoader();
+  const { setCurrentUrl: setSavedContentUrl, forceRefreshSavedState } =
+    useSavedContent();
+  const { registerWebView, unregisterWebView } = useWebView();
   const webViewRef = useRef<WebView | null>(null);
   const [webViewKey, setWebViewKey] = useState(0);
   const [hasError, setHasError] = useState(false);
@@ -24,7 +30,6 @@ export default function PostsScreen() {
   window.addEventListener('click', function() {
     window.ReactNativeWebView.postMessage('ad');
   });
-
   true;
 `;
 
@@ -32,10 +37,11 @@ export default function PostsScreen() {
 
   useEffect(() => {
     setCurrentUrl(defaultUrl);
+    setSavedContentUrl(defaultUrl);
     setWebViewKey((prev) => prev + 1);
     setHasError(false);
     showLoader();
-  }, [refreshCount]);
+  }, [refreshCount, setSavedContentUrl]);
 
   useEffect(() => {
     if (hasError) {
@@ -53,16 +59,33 @@ export default function PostsScreen() {
     return () => subscription.remove();
   }, [hasError]);
 
-  const handleNavigationStateChange = (navState: any) => {
-    if (!navState.loading) {
+  useEffect(() => {
+    if (webViewRef.current) {
+      registerWebView("posts", webViewRef);
+    }
+    return () => unregisterWebView("posts");
+  }, [registerWebView, unregisterWebView]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      forceRefreshSavedState();
+    }, [forceRefreshSavedState])
+  );
+
+  const handleNavigationStateChange = (navState: {
+    loading?: boolean;
+    url?: string;
+  }) => {
+    if (!navState.loading && navState.url) {
       setCurrentUrl(navState.url);
+      setSavedContentUrl(navState.url);
       if (!hasError) {
         hideLoader();
       }
     }
   };
 
-  const handleShouldStartLoadWithRequest = (request: any) => {
+  const handleShouldStartLoadWithRequest = (request: { url: string }) => {
     const { url } = request;
     if (!url.includes("tinnitushelp.me")) {
       openBrowserAsync(url);
@@ -125,8 +148,23 @@ export default function PostsScreen() {
             style={styles.webview}
             injectedJavaScript={injectedJavaScript}
             onMessage={(event) => {
-              if (event.nativeEvent.data === "ad") {
-                handleGlobalPress();
+              try {
+                const data = JSON.parse(event.nativeEvent.data);
+                if (data.type === "URL_VERIFICATION") {
+                  (global as unknown as { webviewCurrentUrl?: string }).webviewCurrentUrl =
+                    data.currentUrl;
+                  (global as unknown as { webviewCurrentPath?: string }).webviewCurrentPath =
+                    data.currentPath;
+                } else if (data.type === "METADATA_EXTRACTED") {
+                  (global as unknown as { extractedMetadata?: unknown }).extractedMetadata =
+                    data.metadata;
+                } else if (event.nativeEvent.data === "ad") {
+                  handleGlobalPress();
+                }
+              } catch {
+                if (event.nativeEvent.data === "ad") {
+                  handleGlobalPress();
+                }
               }
             }}
             onLoadStart={showLoader}
