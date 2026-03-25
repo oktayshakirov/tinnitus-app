@@ -69,7 +69,7 @@ export default function PostsScreen() {
   useFocusEffect(
     React.useCallback(() => {
       forceRefreshSavedState();
-    }, [forceRefreshSavedState])
+    }, [forceRefreshSavedState]),
   );
 
   const handleNavigationStateChange = (navState: {
@@ -151,13 +151,16 @@ export default function PostsScreen() {
               try {
                 const data = JSON.parse(event.nativeEvent.data);
                 if (data.type === "URL_VERIFICATION") {
-                  (global as unknown as { webviewCurrentUrl?: string }).webviewCurrentUrl =
-                    data.currentUrl;
-                  (global as unknown as { webviewCurrentPath?: string }).webviewCurrentPath =
-                    data.currentPath;
+                  (
+                    global as unknown as { webviewCurrentUrl?: string }
+                  ).webviewCurrentUrl = data.currentUrl;
+                  (
+                    global as unknown as { webviewCurrentPath?: string }
+                  ).webviewCurrentPath = data.currentPath;
                 } else if (data.type === "METADATA_EXTRACTED") {
-                  (global as unknown as { extractedMetadata?: unknown }).extractedMetadata =
-                    data.metadata;
+                  (
+                    global as unknown as { extractedMetadata?: unknown }
+                  ).extractedMetadata = data.metadata;
                 } else if (event.nativeEvent.data === "ad") {
                   handleGlobalPress();
                 }
