@@ -19,23 +19,30 @@ import {
 import { getOrRegisterPushToken } from "@/utils/pushToken";
 import { initializeInterstitial } from "@/components/ads/InterstitialAd";
 import { loadAppOpenAd } from "@/components/ads/AppOpenAd";
+import { useGlobalAds } from "@/components/ads/adsManager";
 import OnboardingWrapper from "@/components/OnboardingWrapper";
+import { RevenueCatProvider, useRevenueCat } from "@/contexts/RevenueCatContext";
 
 function AdInitializer() {
   const { isOnboardingActive, isLoading } = useOnboarding();
+  const { isPro, isReady } = useRevenueCat();
 
   useEffect(() => {
-    if (!isOnboardingActive && !isLoading) {
-      initializeInterstitial();
-      loadAppOpenAd();
+    if (isReady && !isOnboardingActive && !isLoading && !isPro) {
+      initializeInterstitial().catch(() => {});
+      loadAppOpenAd().catch(() => {});
     }
-  }, [isOnboardingActive, isLoading]);
+  }, [isOnboardingActive, isLoading, isPro, isReady]);
 
   return null;
 }
 
+function GlobalAdsManager() {
+  useGlobalAds();
+  return null;
+}
+
 export default function RootLayout() {
-  const [expoPushToken, setExpoPushToken] = useState("");
   const [consentCompleted, setConsentCompleted] = useState(false);
   const notificationListener = useRef<EventSubscription | null>(null);
   const responseListener = useRef<EventSubscription | null>(null);
@@ -64,7 +71,6 @@ export default function RootLayout() {
       getOrRegisterPushToken()
         .then((token) => {
           if (token) {
-            setExpoPushToken(token);
             console.log("Expo Push Token:", token);
           } else {
             console.warn("No Expo push token returned.");
@@ -93,24 +99,27 @@ export default function RootLayout() {
         <View style={styles.appContainer}>
           {Platform.OS === "ios" && <View style={styles.statusBarBackground} />}
           <LoaderProvider>
-            <RefreshProvider>
-              <OnboardingProvider>
-                <StatusBar backgroundColor={Colors.background} style="light" />
-                <SafeAreaView
-                  style={styles.safeArea}
-                  edges={["top", "left", "right"]}
-                >
-                  <BannerAd />
-                  <ConsentDialog
-                    onConsentCompleted={() => setConsentCompleted(true)}
-                  />
-                  <AdInitializer />
-                  <OnboardingWrapper>
-                    <Slot />
-                  </OnboardingWrapper>
-                </SafeAreaView>
-              </OnboardingProvider>
-            </RefreshProvider>
+            <RevenueCatProvider>
+              <RefreshProvider>
+                <OnboardingProvider>
+                  <StatusBar backgroundColor={Colors.background} style="light" />
+                  <SafeAreaView
+                    style={styles.safeArea}
+                    edges={["top", "left", "right"]}
+                  >
+                    <BannerAd />
+                    <ConsentDialog
+                      onConsentCompleted={() => setConsentCompleted(true)}
+                    />
+                    <AdInitializer />
+                    <GlobalAdsManager />
+                    <OnboardingWrapper>
+                      <Slot />
+                    </OnboardingWrapper>
+                  </SafeAreaView>
+                </OnboardingProvider>
+              </RefreshProvider>
+            </RevenueCatProvider>
           </LoaderProvider>
         </View>
       </SafeAreaProvider>

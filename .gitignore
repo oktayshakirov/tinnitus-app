@@ -30,6 +30,7 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript
@@ -56,3 +57,6 @@ ios/*.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Firebase Config
 config/FirebaseConfig.ts
+
+# Local reference clones (not part of the app)
+.crypto-wiki-ref/
