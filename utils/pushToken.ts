@@ -8,9 +8,8 @@ async function registerPushTokenOnServer(token: string) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
     });
-    console.log("Push token registered on server:", token);
-  } catch (error) {
-    console.error("Error registering push token on server:", error);
+  } catch {
+    // Registration is best-effort; avoid logging tokens or noise in production.
   }
 }
 
@@ -18,19 +17,16 @@ export async function getOrRegisterPushToken(): Promise<string | null> {
   try {
     let storedToken = await AsyncStorage.getItem("pushToken");
     if (storedToken) {
-      console.log("Token already registered:", storedToken);
       return storedToken;
     }
 
     const { status } = await Notifications.requestPermissionsAsync();
     if (status !== "granted") {
-      console.warn("Permission for push notifications was not granted");
       return null;
     }
 
     const { data: newToken } = await Notifications.getExpoPushTokenAsync();
     if (!newToken) {
-      console.warn("No push token returned from Expo");
       return null;
     }
 
@@ -38,8 +34,7 @@ export async function getOrRegisterPushToken(): Promise<string | null> {
     await registerPushTokenOnServer(newToken);
 
     return newToken;
-  } catch (error) {
-    console.error("Error in getOrRegisterPushToken:", error);
+  } catch {
     return null;
   }
 }

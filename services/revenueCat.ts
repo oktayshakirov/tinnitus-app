@@ -70,9 +70,9 @@ export async function configureRevenueCat() {
   if (!apiKey) return false;
 
   const Purchases = getPurchasesModule();
-  if (__DEV__) {
-    await Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
-  }
+  await Purchases.setLogLevel(
+    __DEV__ ? Purchases.LOG_LEVEL.DEBUG : Purchases.LOG_LEVEL.ERROR
+  );
   Purchases.configure({ apiKey });
   isConfigured = true;
   return true;

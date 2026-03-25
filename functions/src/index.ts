@@ -65,15 +65,13 @@ async function sendPushNotification(
   }));
 
   if (messages.length === 0) {
-    console.log("No valid push tokens to send notifications to.");
     return;
   }
 
   const chunks = expo.chunkPushNotifications(messages);
   for (const chunk of chunks) {
     try {
-      const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-      console.log("Notification tickets:", ticketChunk);
+      await expo.sendPushNotificationsAsync(chunk);
     } catch (error) {
       console.error("Error sending notification chunk:", error);
     }

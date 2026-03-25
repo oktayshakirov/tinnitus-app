@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AppState, Platform, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
+import { useFocusEffect } from "expo-router";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
 import { useLoader } from "@/contexts/LoaderContext";
@@ -8,10 +9,15 @@ import { useGlobalAds } from "@/components/ads/adsManager";
 import { Pressable } from "react-native";
 import { openBrowserAsync } from "expo-web-browser";
 import OfflineScreen from "@/components/OfflineScreen";
+import { useSavedContent } from "@/contexts/SavedContentContext";
+import { useWebView } from "@/contexts/WebViewContext";
 
 export default function TagsScreen() {
   const { refreshCount } = useRefresh("tags");
   const { showLoader, hideLoader } = useLoader();
+  const { setCurrentUrl: setSavedContentUrl, forceRefreshSavedState } =
+    useSavedContent();
+  const { registerWebView, unregisterWebView } = useWebView();
   const webViewRef = useRef<WebView | null>(null);
   const [webViewKey, setWebViewKey] = useState(0);
   const [hasError, setHasError] = useState(false);
@@ -32,10 +38,24 @@ export default function TagsScreen() {
 
   useEffect(() => {
     setCurrentUrl(defaultUrl);
+    setSavedContentUrl(defaultUrl);
     setWebViewKey((prev) => prev + 1);
     setHasError(false);
     showLoader();
-  }, [refreshCount]);
+  }, [refreshCount, setSavedContentUrl]);
+
+  useEffect(() => {
+    if (webViewRef.current) {
+      registerWebView("tags", webViewRef);
+    }
+    return () => unregisterWebView("tags");
+  }, [registerWebView, unregisterWebView]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      forceRefreshSavedState();
+    }, [forceRefreshSavedState])
+  );
 
   useEffect(() => {
     if (hasError) {
@@ -53,9 +73,13 @@ export default function TagsScreen() {
     return () => subscription.remove();
   }, [hasError]);
 
-  const handleNavigationStateChange = (navState: any) => {
-    if (!navState.loading) {
+  const handleNavigationStateChange = (navState: {
+    loading?: boolean;
+    url?: string;
+  }) => {
+    if (!navState.loading && navState.url) {
       setCurrentUrl(navState.url);
+      setSavedContentUrl(navState.url);
       if (!hasError) {
         hideLoader();
       }
@@ -125,8 +149,23 @@ export default function TagsScreen() {
             style={styles.webview}
             injectedJavaScript={injectedJavaScript}
             onMessage={(event) => {
-              if (event.nativeEvent.data === "ad") {
-                handleGlobalPress();
+              try {
+                const data = JSON.parse(event.nativeEvent.data);
+                if (data.type === "URL_VERIFICATION") {
+                  (global as unknown as { webviewCurrentUrl?: string }).webviewCurrentUrl =
+                    data.currentUrl;
+                  (global as unknown as { webviewCurrentPath?: string }).webviewCurrentPath =
+                    data.currentPath;
+                } else if (data.type === "METADATA_EXTRACTED") {
+                  (global as unknown as { extractedMetadata?: unknown }).extractedMetadata =
+                    data.metadata;
+                } else if (event.nativeEvent.data === "ad") {
+                  handleGlobalPress();
+                }
+              } catch {
+                if (event.nativeEvent.data === "ad") {
+                  handleGlobalPress();
+                }
               }
             }}
             onLoadStart={showLoader}
