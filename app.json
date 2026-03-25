@@ -180,6 +180,9 @@
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
             "buildToolsVersion": "35.0.0"
+          },
+          "ios": {
+            "buildReactNativeFromSource": true
           }
         }
       ],
@@ -192,15 +195,13 @@
       },
       "eas": {
         "projectId": "274da90d-795f-4715-8c0e-f215c3dc85ee"
+      },
+      "revenueCat": {
+        "apiKey": "",
+        "iosApiKey": "",
+        "androidApiKey": "",
+        "entitlementId": "pro"
       }
-    }
-  },
-  "extra": {
-    "router": {
-      "origin": false
-    },
-    "eas": {
-      "projectId": "274da90d-795f-4715-8c0e-f215c3dc85ee"
     },
     "experiments": {
       "typedRoutes": true

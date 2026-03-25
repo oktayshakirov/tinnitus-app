@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, StyleSheet, Animated, AppState } from "react-native";
+import { StyleSheet, Animated, AppState } from "react-native";
 import { BannerAd, BannerAdSize } from "react-native-google-mobile-ads";
 import { getAdUnitId } from "./adConfig";
 import { useAdConsent } from "./useAdConsent";
+import { useRevenueCat } from "@/contexts/RevenueCatContext";
 
 const BannerAdComponent = () => {
   const { requestNonPersonalizedAdsOnly } = useAdConsent();
+  const { isPro, isReady } = useRevenueCat();
   const [isAdLoaded, setIsAdLoaded] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [adKey, setAdKey] = useState(0);
@@ -25,13 +27,12 @@ const BannerAdComponent = () => {
   };
 
   useEffect(() => {
+    if (isPro || !isReady) return;
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (
         appState.current.match(/inactive|background/) &&
         nextAppState === "active"
       ) {
-        // Reload banner ad when app comes to foreground
-        // Force remount by changing key
         setIsAdLoaded(false);
         setAdKey((prev) => prev + 1);
       }
@@ -41,7 +42,11 @@ const BannerAdComponent = () => {
     return () => {
       subscription.remove();
     };
-  }, []);
+  }, [isPro, isReady]);
+
+  if (isPro || !isReady) {
+    return null;
+  }
 
   return (
     <Animated.View
