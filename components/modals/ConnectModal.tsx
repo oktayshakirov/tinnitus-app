@@ -23,6 +23,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import { Colors } from "@/constants/Colors";
 
+const APP_NAME = "TinnitusHelp.me";
 const APP_STORE_ID = "6741688965";
 const ANDROID_PACKAGE = "com.shadev.tinnitushelpme";
 const CONTACT_EMAIL = "contact@tinnitushelp.me";
@@ -153,22 +154,22 @@ function handleBugReport() {
   const osVersion =
     `${Device.osName ?? Platform.OS} ${Device.osVersion ?? ""}`.trim();
   sendMail(
-    "[Bug Report] TinnitusHelp.me",
+    `[Bug Report] ${APP_NAME}`,
     `Describe the bug:\n\n\nSteps to reproduce:\n1.\n2.\n3.\n\n--- App info ---\nVersion: ${APP_VERSION}\nDevice: ${deviceModel}\nOS: ${osVersion}\n`
   );
 }
 
 function handleFeatureRequest() {
   sendMail(
-    "[Feature Request] TinnitusHelp.me",
+    `[Feature Request] ${APP_NAME}`,
     `What feature would you like to see?\n\n\nWhy would this be useful?\n\n`
   );
 }
 
 function handlePartnership() {
   sendMail(
-    "[Partnership] TinnitusHelp.me",
-    `Hi TinnitusHelp.me team,\n\nI'd like to explore a partnership opportunity.\n\nCompany / Name:\nWebsite:\nProposal:\n\n`
+    `[Partnership] ${APP_NAME}`,
+    `Hi ${APP_NAME} team,\n\nI'd like to explore a partnership opportunity.\n\nCompany / Name:\nWebsite:\nProposal:\n\n`
   );
 }
 
@@ -180,8 +181,7 @@ async function handleRateApp() {
     // Treat storage failure as not yet requested.
   }
 
-  const canPrompt =
-    !alreadyRequested && (await StoreReview.isAvailableAsync());
+  const canPrompt = !alreadyRequested && (await StoreReview.isAvailableAsync());
 
   if (canPrompt) {
     try {
@@ -201,6 +201,44 @@ async function handleRateApp() {
       { text: "Open store", onPress: openStoreListing },
     ]
   );
+}
+
+function SectionLabel({ label }: { label: string }) {
+  return <Text style={styles.sectionLabel}>{label}</Text>;
+}
+
+function Row({
+  icon,
+  label,
+  onPress,
+  iconColor,
+  trailingIcon = "chevron-forward",
+}: {
+  icon: React.ComponentProps<typeof Ionicons>["name"];
+  label: string;
+  onPress: () => void;
+  iconColor?: string;
+  trailingIcon?: React.ComponentProps<typeof Ionicons>["name"];
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.row, pressed && styles.pressedOpacity]}
+    >
+      <Ionicons
+        name={icon}
+        size={20}
+        color={iconColor ?? Colors.activeIcon}
+        style={styles.rowIcon}
+      />
+      <Text style={styles.rowLabel}>{label}</Text>
+      <Ionicons name={trailingIcon} size={16} color="rgba(255,255,255,0.3)" />
+    </Pressable>
+  );
+}
+
+function Divider() {
+  return <View style={styles.divider} />;
 }
 
 interface ConnectModalProps {
@@ -225,10 +263,8 @@ export function ConnectModal({ visible, onClose }: ConnectModalProps) {
           style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}
           onPress={(e) => e.stopPropagation()}
         >
-          {/* Handle bar */}
           <View style={styles.handle} />
 
-          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Connect with Us</Text>
             <Pressable
@@ -244,205 +280,86 @@ export function ConnectModal({ visible, onClose }: ConnectModalProps) {
           </View>
 
           <ScrollView
-            style={styles.scrollView}
+            contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
           >
-              {/* FEEDBACK */}
-              <Text style={styles.sectionLabel}>FEEDBACK</Text>
-              <View style={styles.section}>
-                <Pressable
-                  onPress={handleBugReport}
-                  style={({ pressed }) => [
-                    styles.row,
-                    styles.rowFirst,
-                    pressed && styles.pressedOpacity,
-                  ]}
-                >
-                  <View style={styles.rowLeft}>
-                    <Ionicons name="bug-outline" size={20} color="#f87171" />
-                    <Text style={styles.rowLabel}>Report a Bug</Text>
-                  </View>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color="rgba(255,255,255,0.3)"
-                  />
-                </Pressable>
+            <SectionLabel label="FEEDBACK" />
+            <View style={styles.card}>
+              <Row
+                icon="bug-outline"
+                label="Report a Bug"
+                iconColor="#f87171"
+                onPress={handleBugReport}
+              />
+              <Divider />
+              <Row
+                icon="bulb-outline"
+                label="Suggest a Feature"
+                iconColor="#facc15"
+                onPress={handleFeatureRequest}
+              />
+              <Divider />
+              <Row
+                icon="star-outline"
+                label={`Rate ${APP_NAME}`}
+                iconColor="#fb923c"
+                onPress={handleRateApp}
+              />
+            </View>
 
-                <Pressable
-                  onPress={handleFeatureRequest}
-                  style={({ pressed }) => [
-                    styles.row,
-                    styles.rowLast,
-                    pressed && styles.pressedOpacity,
-                  ]}
-                >
-                  <View style={styles.rowLeft}>
-                    <Ionicons name="bulb-outline" size={20} color="#facc15" />
-                    <Text style={styles.rowLabel}>Suggest a Feature</Text>
-                  </View>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color="rgba(255,255,255,0.3)"
-                  />
-                </Pressable>
-              </View>
+            <SectionLabel label="COMMUNITY" />
+            <View style={styles.card}>
+              <Row
+                icon="logo-tiktok"
+                label="Follow on TikTok"
+                iconColor={Colors.text}
+                trailingIcon="open-outline"
+                onPress={() => Linking.openURL(TIKTOK_URL)}
+              />
+              <Divider />
+              <Row
+                icon="logo-instagram"
+                label="Follow on Instagram"
+                iconColor="#e1306c"
+                trailingIcon="open-outline"
+                onPress={() => Linking.openURL(INSTAGRAM_URL)}
+              />
+              <Divider />
+              <Row
+                icon="paper-plane-outline"
+                label="Join us on Telegram"
+                iconColor="#2aabee"
+                trailingIcon="open-outline"
+                onPress={() => Linking.openURL(TELEGRAM_URL)}
+              />
+              <Divider />
+              <Row
+                icon="logo-facebook"
+                label="Follow on Facebook"
+                iconColor="#1877f2"
+                trailingIcon="open-outline"
+                onPress={() => Linking.openURL(FACEBOOK_URL)}
+              />
+              <Divider />
+              <Row
+                icon="logo-twitter"
+                label="Follow on Twitter / X"
+                iconColor="#1da1f2"
+                trailingIcon="open-outline"
+                onPress={() => Linking.openURL(TWITTER_URL)}
+              />
+            </View>
 
-              {/* COMMUNITY */}
-              <Text style={styles.sectionLabel}>COMMUNITY</Text>
-              <View style={styles.section}>
-                <Pressable
-                  onPress={handleRateApp}
-                  style={({ pressed }) => [
-                    styles.row,
-                    styles.rowFirst,
-                    pressed && styles.pressedOpacity,
-                  ]}
-                >
-                  <View style={styles.rowLeft}>
-                    <Ionicons name="star-outline" size={20} color="#fb923c" />
-                    <Text style={styles.rowLabel}>Rate TinnitusHelp.me</Text>
-                  </View>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color="rgba(255,255,255,0.3)"
-                  />
-                </Pressable>
-
-                <Pressable
-                  onPress={() => Linking.openURL(TIKTOK_URL)}
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && styles.pressedOpacity,
-                  ]}
-                >
-                  <View style={styles.rowLeft}>
-                    <Ionicons name="logo-tiktok" size={20} color={Colors.text} />
-                    <Text style={styles.rowLabel}>Follow on TikTok</Text>
-                  </View>
-                  <Ionicons
-                    name="open-outline"
-                    size={16}
-                    color="rgba(255,255,255,0.3)"
-                  />
-                </Pressable>
-
-                <Pressable
-                  onPress={() => Linking.openURL(INSTAGRAM_URL)}
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && styles.pressedOpacity,
-                  ]}
-                >
-                  <View style={styles.rowLeft}>
-                    <Ionicons
-                      name="logo-instagram"
-                      size={20}
-                      color="#e1306c"
-                    />
-                    <Text style={styles.rowLabel}>Follow on Instagram</Text>
-                  </View>
-                  <Ionicons
-                    name="open-outline"
-                    size={16}
-                    color="rgba(255,255,255,0.3)"
-                  />
-                </Pressable>
-
-                <Pressable
-                  onPress={() => Linking.openURL(FACEBOOK_URL)}
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && styles.pressedOpacity,
-                  ]}
-                >
-                  <View style={styles.rowLeft}>
-                    <Ionicons
-                      name="logo-facebook"
-                      size={20}
-                      color="#1877f2"
-                    />
-                    <Text style={styles.rowLabel}>Follow on Facebook</Text>
-                  </View>
-                  <Ionicons
-                    name="open-outline"
-                    size={16}
-                    color="rgba(255,255,255,0.3)"
-                  />
-                </Pressable>
-
-                <Pressable
-                  onPress={() => Linking.openURL(TWITTER_URL)}
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && styles.pressedOpacity,
-                  ]}
-                >
-                  <View style={styles.rowLeft}>
-                    <Ionicons
-                      name="logo-twitter"
-                      size={20}
-                      color="#1da1f2"
-                    />
-                    <Text style={styles.rowLabel}>Follow on Twitter / X</Text>
-                  </View>
-                  <Ionicons
-                    name="open-outline"
-                    size={16}
-                    color="rgba(255,255,255,0.3)"
-                  />
-                </Pressable>
-
-                <Pressable
-                  onPress={() => Linking.openURL(TELEGRAM_URL)}
-                  style={({ pressed }) => [
-                    styles.row,
-                    styles.rowLast,
-                    pressed && styles.pressedOpacity,
-                  ]}
-                >
-                  <View style={styles.rowLeft}>
-                    <Ionicons
-                      name="paper-plane-outline"
-                      size={20}
-                      color="#2aabee"
-                    />
-                    <Text style={styles.rowLabel}>Join on Telegram</Text>
-                  </View>
-                  <Ionicons
-                    name="open-outline"
-                    size={16}
-                    color="rgba(255,255,255,0.3)"
-                  />
-                </Pressable>
-              </View>
-
-              {/* BUSINESS */}
-              <Text style={styles.sectionLabel}>BUSINESS</Text>
-              <View style={[styles.section, styles.sectionLast]}>
-                <Pressable
-                  onPress={handlePartnership}
-                  style={({ pressed }) => [
-                    styles.row,
-                    styles.rowFirst,
-                    styles.rowLast,
-                    pressed && styles.pressedOpacity,
-                  ]}
-                >
-                  <View style={styles.rowLeft}>
-                    <Ionicons name="rocket-outline" size={20} color="#818cf8" />
-                    <Text style={styles.rowLabel}>Work with Us</Text>
-                  </View>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color="rgba(255,255,255,0.3)"
-                  />
-                </Pressable>
-              </View>
-            </ScrollView>
+            <SectionLabel label="BUSINESS" />
+            <View style={styles.card}>
+              <Row
+                icon="briefcase-outline"
+                label="Work with Us"
+                iconColor="#818cf8"
+                onPress={handlePartnership}
+              />
+            </View>
+          </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>
@@ -491,8 +408,9 @@ const styles = StyleSheet.create({
     margin: -8,
     borderRadius: 8,
   },
-  scrollView: {
+  content: {
     paddingHorizontal: 16,
+    paddingBottom: 8,
   },
   sectionLabel: {
     fontSize: 11,
@@ -500,44 +418,36 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.45)",
     letterSpacing: 1.2,
     marginBottom: 8,
-    marginTop: 4,
+    marginTop: 16,
   },
-  section: {
-    marginBottom: 20,
+  card: {
     backgroundColor: ROW_BG,
     borderRadius: 12,
     overflow: "hidden",
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: BORDER_COLOR,
   },
-  sectionLast: {
-    marginBottom: 8,
-  },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: BORDER_COLOR,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
   },
-  rowFirst: {
-    borderTopWidth: 0,
-  },
-  rowLast: {
-    borderBottomWidth: 0,
-  },
-  rowLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    flex: 1,
+  rowIcon: {
+    marginRight: 14,
+    width: 22,
+    textAlign: "center",
   },
   rowLabel: {
+    flex: 1,
     fontSize: 15,
     fontWeight: "500",
     color: Colors.text,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: BORDER_COLOR,
+    marginLeft: 52,
   },
   pressedOpacity: {
     opacity: 0.6,
