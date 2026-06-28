@@ -15,6 +15,8 @@ type CustomerInfo = {
   };
 };
 
+export type PlanLabel = "Free" | "Monthly" | "Pro" | "Lifetime";
+
 let isConfigured = false;
 
 function getRevenueCatConfig(): RevenueCatRuntimeConfig {
@@ -87,6 +89,19 @@ export async function getCustomerInfo(): Promise<CustomerInfo | null> {
 export function hasProEntitlement(customerInfo: CustomerInfo | null): boolean {
   if (!customerInfo?.entitlements?.active) return false;
   return Boolean(customerInfo.entitlements.active[getEntitlementId()]);
+}
+
+export function getPlanLabel(customerInfo: CustomerInfo | null): PlanLabel {
+  if (!hasProEntitlement(customerInfo)) return "Free";
+  const entitlement = customerInfo?.entitlements?.active?.[getEntitlementId()] as
+    | { productIdentifier?: string }
+    | undefined;
+  const id = (entitlement?.productIdentifier ?? "").toLowerCase();
+  if (id.includes("lifetime")) return "Lifetime";
+  if (id.includes("month") || id.includes("annual") || id.includes("year")) {
+    return "Monthly";
+  }
+  return "Pro";
 }
 
 export async function presentPaywall() {
