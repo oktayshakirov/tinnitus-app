@@ -6,22 +6,36 @@ import {
   StyleSheet,
   Animated,
   Dimensions,
-  Alert,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import MaterialIcons from "@expo/vector-icons/Fontisto";
+import { Ionicons } from "@expo/vector-icons";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
-import { useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import { useSavedContent } from "@/contexts/SavedContentContext";
+import { ConnectModal } from "@/components/modals/ConnectModal";
+import { PlanModal } from "@/components/modals/PlanModal";
 
 const { width, height } = Dimensions.get("window");
+
+type MenuItem = {
+  label: string;
+  // Either a Fontisto icon (existing items) or an Ionicons icon (new items)
+  icon?: string;
+  ionicon?: React.ComponentProps<typeof Ionicons>["name"];
+  route?: Href;
+  action?: () => void;
+  count?: number | null;
+};
 
 export default function HeaderMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuAnimation] = useState(new Animated.Value(0));
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [connectVisible, setConnectVisible] = useState(false);
+  const [planVisible, setPlanVisible] = useState(false);
   const router = useRouter();
-  const { isPro, isSupported, isReady, showPaywall } = useRevenueCat();
+  const { isPro, isSupported } = useRevenueCat();
   const { savedCounts } = useSavedContent();
 
   const toggleMenu = () => {
@@ -53,36 +67,29 @@ export default function HeaderMenu() {
     outputRange: [0, 1],
   });
 
-  const menuItems = [
-    {
-      label: isPro ? "You're Pro (No Ads)" : "Remove Ads",
-      icon: "star",
-      action: async () => {
-        if (!isSupported) {
-          Alert.alert(
-            "Not Supported",
-            "In-app purchases are available only on iOS and Android."
-          );
-          return;
-        }
-        if (!isReady) {
-          Alert.alert(
-            "Please wait",
-            "Store is still loading. Try again in a few seconds."
-          );
-          return;
-        }
-        await showPaywall();
-      },
-    },
+  const menuItems: MenuItem[] = [
     {
       label: "Saved posts",
       icon: "quote-a-left",
-      action: async () => {
-        router.push("/saved-content/saved-posts");
-      },
+      route: "/saved-content/saved-posts",
       count: savedCounts.posts,
     },
+    {
+      label: "Connect with Us",
+      ionicon: "chatbubble-ellipses",
+      action: () => setConnectVisible(true),
+      count: null,
+    },
+    ...(isSupported
+      ? [
+          {
+            label: isPro ? "Manage Plan" : "Upgrade to Pro",
+            ionicon: "star" as const,
+            action: () => setPlanVisible(true),
+            count: null,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -120,17 +127,30 @@ export default function HeaderMenu() {
                 key={index}
                 style={styles.menuItem}
                 activeOpacity={0.7}
-                onPress={async () => {
-                  await item.action();
+                onPress={() => {
+                  if (item.route) {
+                    router.push(item.route);
+                  } else if (item.action) {
+                    item.action();
+                  }
                   toggleMenu();
                 }}
               >
-                <MaterialIcons
-                  name={item.icon as any}
-                  size={18}
-                  color={Colors.activeIcon}
-                  style={styles.menuIcon}
-                />
+                {item.ionicon ? (
+                  <Ionicons
+                    name={item.ionicon}
+                    size={18}
+                    color={Colors.activeIcon}
+                    style={styles.menuIcon}
+                  />
+                ) : (
+                  <MaterialIcons
+                    name={item.icon as any}
+                    size={18}
+                    color={Colors.activeIcon}
+                    style={styles.menuIcon}
+                  />
+                )}
                 <Text style={styles.menuText}>{item.label}</Text>
                 {typeof item.count === "number" && (
                   <Text style={styles.menuCount}>({item.count})</Text>
@@ -148,6 +168,12 @@ export default function HeaderMenu() {
           onPress={toggleMenu}
         />
       )}
+
+      <ConnectModal
+        visible={connectVisible}
+        onClose={() => setConnectVisible(false)}
+      />
+      <PlanModal visible={planVisible} onClose={() => setPlanVisible(false)} />
     </>
   );
 }
