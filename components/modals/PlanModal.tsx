@@ -222,22 +222,24 @@ export function PlanModal({ visible, onClose }: PlanModalProps) {
               </Pressable>
             )}
 
-            <Pressable
-              onPress={handleRestore}
-              disabled={restoring}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                pressed && styles.pressedOpacity,
-              ]}
-            >
-              {restoring ? (
-                <ActivityIndicator size="small" color={Colors.text} />
-              ) : (
-                <Text style={styles.secondaryButtonText}>
-                  Restore Purchases
-                </Text>
-              )}
-            </Pressable>
+            {!isPro && (
+              <Pressable
+                onPress={handleRestore}
+                disabled={restoring}
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  pressed && styles.pressedOpacity,
+                ]}
+              >
+                {restoring ? (
+                  <ActivityIndicator size="small" color={Colors.text} />
+                ) : (
+                  <Text style={styles.secondaryButtonText}>
+                    Restore Purchases
+                  </Text>
+                )}
+              </Pressable>
+            )}
 
             {__DEV__ && (
               <View style={styles.devCard}>
@@ -264,7 +266,7 @@ export function PlanModal({ visible, onClose }: PlanModalProps) {
                       styles.devOption,
                       devProOverride !== true && styles.devOptionActive,
                     ]}
-                    onPress={() => setDevProOverride(false)}
+                    onPress={() => setDevProOverride(null)}
                   >
                     <Text
                       style={[
