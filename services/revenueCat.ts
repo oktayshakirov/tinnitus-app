@@ -9,9 +9,13 @@ type RevenueCatRuntimeConfig = {
   entitlementId?: string;
 };
 
+type EntitlementInfo = {
+  productIdentifier?: string;
+};
+
 type CustomerInfo = {
   entitlements?: {
-    active?: Record<string, unknown>;
+    active?: Record<string, EntitlementInfo>;
   };
 };
 
@@ -86,17 +90,26 @@ export async function getCustomerInfo(): Promise<CustomerInfo | null> {
   return (await Purchases.getCustomerInfo()) as CustomerInfo;
 }
 
+// Returns the active entitlement that grants Pro. Prefers the configured
+// entitlement id (e.g. "pro"), but since this app has a single paid tier, any
+// active entitlement counts — this makes us resilient to the entitlement being
+// named differently in the RevenueCat dashboard than our default.
+function getActiveProEntitlement(
+  customerInfo: CustomerInfo | null
+): EntitlementInfo | undefined {
+  const active = customerInfo?.entitlements?.active;
+  if (!active) return undefined;
+  return active[getEntitlementId()] ?? Object.values(active)[0];
+}
+
 export function hasProEntitlement(customerInfo: CustomerInfo | null): boolean {
-  if (!customerInfo?.entitlements?.active) return false;
-  return Boolean(customerInfo.entitlements.active[getEntitlementId()]);
+  return Boolean(getActiveProEntitlement(customerInfo));
 }
 
 export function getPlanLabel(customerInfo: CustomerInfo | null): PlanLabel {
-  if (!hasProEntitlement(customerInfo)) return "Free";
-  const entitlement = customerInfo?.entitlements?.active?.[getEntitlementId()] as
-    | { productIdentifier?: string }
-    | undefined;
-  const id = (entitlement?.productIdentifier ?? "").toLowerCase();
+  const entitlement = getActiveProEntitlement(customerInfo);
+  if (!entitlement) return "Free";
+  const id = (entitlement.productIdentifier ?? "").toLowerCase();
   if (id.includes("lifetime")) return "Lifetime";
   if (id.includes("month") || id.includes("annual") || id.includes("year")) {
     return "Monthly";
@@ -106,6 +119,15 @@ export function getPlanLabel(customerInfo: CustomerInfo | null): PlanLabel {
 
 export async function presentPaywall() {
   if (!isRevenueCatSupported()) return false;
+
+  if (!isConfigured) {
+    const configured = await configureRevenueCat();
+    if (!configured) return false;
+  }
+
+  const customerInfo = await getCustomerInfo();
+  if (hasProEntitlement(customerInfo)) return false;
+
   const RevenueCatUIImport = require("react-native-purchases-ui");
   const RevenueCatUI = RevenueCatUIImport.default ?? RevenueCatUIImport;
   await RevenueCatUI.presentPaywall({ displayCloseButton: true });

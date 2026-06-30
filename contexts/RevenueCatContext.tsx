@@ -55,16 +55,30 @@ export function RevenueCatProvider({ children }: { children: React.ReactNode }) 
 
   const refreshCustomerInfo = useCallback(async () => {
     const customerInfo = await getCustomerInfo();
+    if (__DEV__) {
+      const activeKeys = Object.keys(customerInfo?.entitlements?.active ?? {});
+      console.log(
+        "[RevenueCat] active entitlements:",
+        activeKeys.length ? activeKeys : "(none)",
+        "| isPro:",
+        hasProEntitlement(customerInfo)
+      );
+    }
     setRealIsPro(hasProEntitlement(customerInfo));
     setRealPlanLabel(getPlanLabel(customerInfo));
   }, []);
 
-  // Load persisted developer override (dev builds only)
+  // Load persisted developer override (dev builds only). Only "On" (true) is a
+  // real override; a legacy "false" used to force-hide Pro and blocked real
+  // purchases in dev, so we treat it as "no override" and clear it.
   useEffect(() => {
     if (!__DEV__) return;
     AsyncStorage.getItem(DEV_PRO_OVERRIDE_KEY).then((stored) => {
-      if (stored === "true") setDevProOverrideState(true);
-      else if (stored === "false") setDevProOverrideState(false);
+      if (stored === "true") {
+        setDevProOverrideState(true);
+      } else if (stored === "false") {
+        AsyncStorage.removeItem(DEV_PRO_OVERRIDE_KEY).catch(() => undefined);
+      }
     });
   }, []);
 
