@@ -51,10 +51,10 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
       "Explore a library of therapeutic sounds designed to help mask tinnitus and promote relaxation. Find the perfect sound to suit your needs.",
   },
   {
-    id: "tags",
-    title: "Organized Content",
+    id: "checkin",
+    title: "Tinnitus Journal",
     description:
-      "Browse content by tags to quickly find information relevant to your specific needs. Everything is organized for easy navigation.",
+      "Track how your tinnitus feels each day, note what might have played a role and build a streak. A quick daily entry helps you spot your patterns.",
   },
 ];
 

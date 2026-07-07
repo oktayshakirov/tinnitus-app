@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AppState, Platform, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
 import { useLoader } from "@/contexts/LoaderContext";
@@ -23,6 +23,8 @@ export default function SoundsScreen() {
   const [hasError, setHasError] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
   const defaultUrl = "https://www.tinnitushelp.me/zen?isApp=true";
+  // Deep link from the "Sound of the Day" widget: tinnitushelp://sounds?zen=<slug>
+  const { zen } = useLocalSearchParams<{ zen?: string }>();
   const [currentUrl, setCurrentUrl] = useState(defaultUrl);
 
   const injectedJavaScript = `
@@ -43,6 +45,17 @@ export default function SoundsScreen() {
     setHasError(false);
     showLoader();
   }, [refreshCount, setSavedContentUrl]);
+
+  // When opened via the widget deep link, load that specific sound page.
+  useEffect(() => {
+    if (!zen) return;
+    const zenUrl = `https://www.tinnitushelp.me/zen/${zen}?isApp=true`;
+    setCurrentUrl(zenUrl);
+    setSavedContentUrl(zenUrl);
+    setWebViewKey((prev) => prev + 1);
+    setHasError(false);
+    showLoader();
+  }, [zen, setSavedContentUrl]);
 
   useEffect(() => {
     if (webViewRef.current) {

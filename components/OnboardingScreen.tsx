@@ -41,8 +41,8 @@ export default function OnboardingScreen() {
         return "quote-a-left";
       case "sounds":
         return "music-note";
-      case "tags":
-        return "hashtag";
+      case "checkin":
+        return "calendar";
       default:
         return "check";
     }

@@ -21,7 +21,7 @@ const ROUTE_REFRESH_MAP: Record<string, string> = {
   index: "home",
   posts: "posts",
   sounds: "sounds",
-  tags: "tags",
+  checkin: "checkin",
   "saved-posts": "saved-posts",
 };
 
