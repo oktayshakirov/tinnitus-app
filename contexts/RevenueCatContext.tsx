@@ -18,6 +18,7 @@ import {
   presentPaywall,
   restorePurchases,
 } from "@/services/revenueCat";
+import { syncWidgets } from "@/services/widget/widgetSync";
 
 const DEV_PRO_OVERRIDE_KEY = "devProOverride";
 
@@ -81,6 +82,12 @@ export function RevenueCatProvider({ children }: { children: React.ReactNode }) 
       }
     });
   }, []);
+
+  // Keep the home-screen widgets in sync with Pro status (runs on mount and
+  // whenever it changes). No-ops safely if the widget packages aren't present.
+  useEffect(() => {
+    syncWidgets(isPro);
+  }, [isPro]);
 
   const setDevProOverride = useCallback(async (value: boolean | null) => {
     setDevProOverrideState(value);

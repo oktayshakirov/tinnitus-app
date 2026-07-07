@@ -4,10 +4,10 @@
     "slug": "tinnitus-help-me",
     "owner": "oktay.shakirov",
     "projectId": "274da90d-795f-4715-8c0e-f215c3dc85ee",
-    "version": "3.5.1",
+    "version": "3.6.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "TinnitusHelp.me",
+    "scheme": ["TinnitusHelp.me", "tinnitushelp"],
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -192,7 +192,57 @@
       ],
       "expo-font",
       "expo-web-browser",
-      "expo-mail-composer"
+      "expo-mail-composer",
+      "./plugins/withAppGroup",
+      [
+        "@bacons/apple-targets",
+        {
+          "appleTeamId": "2UNNRK9L5Q"
+        }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "TinnitusCheckin",
+              "label": "Journal",
+              "minWidth": "140dp",
+              "minHeight": "140dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "description": "Your journal streak and today's tinnitus level at a glance.",
+              "previewImage": "./assets/images/icon.png",
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "TinnitusTip",
+              "label": "Daily Tinnitus Tip",
+              "minWidth": "140dp",
+              "minHeight": "140dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "description": "A helpful tinnitus tip that changes every day.",
+              "previewImage": "./assets/images/icon.png",
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "TinnitusSound",
+              "label": "Sound of the Day",
+              "minWidth": "140dp",
+              "minHeight": "140dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "description": "A relaxing sound to listen to, refreshed every day.",
+              "previewImage": "./assets/images/icon.png",
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ]
     ],
     "extra": {
       "router": {

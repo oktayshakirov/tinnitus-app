@@ -66,13 +66,15 @@ export default function TabLayout() {
         />
 
         <Tabs.Screen
-          name="tags"
+          name="checkin"
           options={{
-            title: "Tags",
+            title: "Journal",
             tabBarIcon: ({ color }) => (
-              <MaterialIcons name="hashtag" size={23} color={color} />
+              <MaterialIcons name="calendar" size={23} color={color} />
             ),
-            tabBarButton: (props) => <HapticTab {...props} refreshKey="tags" />,
+            tabBarButton: (props) => (
+              <HapticTab {...props} refreshKey="checkin" />
+            ),
           }}
         />
       </Tabs>
