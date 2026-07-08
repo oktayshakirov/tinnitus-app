@@ -152,10 +152,7 @@
     },
     "android": {
       "package": "com.shadev.tinnitushelpme",
-      "versionCode": 13,
-      "config": {
-        "googleMobileAdsAppId": "ca-app-pub-5852582960793521~2742534243"
-      },
+      "versionCode": 14,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#5B3964"
@@ -193,6 +190,7 @@
       "expo-font",
       "expo-web-browser",
       "expo-mail-composer",
+      "./plugins/withAdMobAndroid",
       "./plugins/withAppGroup",
       [
         "@bacons/apple-targets",
@@ -207,8 +205,8 @@
             {
               "name": "TinnitusCheckin",
               "label": "Journal",
-              "minWidth": "140dp",
-              "minHeight": "140dp",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
               "targetCellWidth": 2,
               "targetCellHeight": 2,
               "description": "Your journal streak and today's tinnitus level at a glance.",
@@ -217,11 +215,35 @@
               "updatePeriodMillis": 1800000
             },
             {
+              "name": "TinnitusCheckinWide",
+              "label": "Journal (Wide)",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "description": "Your journal streak, today's level and a 7-day trend.",
+              "previewImage": "./assets/images/icon.png",
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
               "name": "TinnitusTip",
               "label": "Daily Tinnitus Tip",
-              "minWidth": "140dp",
-              "minHeight": "140dp",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
               "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "description": "A helpful tinnitus tip that changes every day.",
+              "previewImage": "./assets/images/icon.png",
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "TinnitusTipWide",
+              "label": "Daily Tinnitus Tip (Wide)",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
               "targetCellHeight": 2,
               "description": "A helpful tinnitus tip that changes every day.",
               "previewImage": "./assets/images/icon.png",
@@ -231,9 +253,21 @@
             {
               "name": "TinnitusSound",
               "label": "Sound of the Day",
-              "minWidth": "140dp",
-              "minHeight": "140dp",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
               "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "description": "A relaxing sound to listen to, refreshed every day.",
+              "previewImage": "./assets/images/icon.png",
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "TinnitusSoundWide",
+              "label": "Sound of the Day (Wide)",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
               "targetCellHeight": 2,
               "description": "A relaxing sound to listen to, refreshed every day.",
               "previewImage": "./assets/images/icon.png",

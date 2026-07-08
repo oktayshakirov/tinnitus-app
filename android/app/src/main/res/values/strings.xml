@@ -1,8 +1,12 @@
 <resources>
   <string name="app_name">TinnitusHelp.me</string>
   <string name="expo_system_ui_user_interface_style" translatable="false">automatic</string>
+  <string name="widget_tinnituscheckin_description" translatable="false">Your journal streak and today\'s tinnitus level at a glance.</string>
+  <string name="widget_tinnituscheckinwide_description" translatable="false">Your journal streak, today\'s level and a 7-day trend.</string>
   <string name="widget_tinnitustip_description" translatable="false">A helpful tinnitus tip that changes every day.</string>
+  <string name="widget_tinnitustipwide_description" translatable="false">A helpful tinnitus tip that changes every day.</string>
   <string name="widget_tinnitussound_description" translatable="false">A relaxing sound to listen to, refreshed every day.</string>
+  <string name="widget_tinnitussoundwide_description" translatable="false">A relaxing sound to listen to, refreshed every day.</string>
   <string name="expo_splash_screen_resize_mode" translatable="false">cover</string>
   <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
 </resources>

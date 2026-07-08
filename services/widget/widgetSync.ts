@@ -17,9 +17,13 @@ import { TINNITUS_TIPS } from "@/constants/tinnitusTips";
 
 export const WIDGET_APP_GROUP = "group.com.shadev.tinnitushelpme";
 export const WIDGET_IS_PRO_KEY = "widget_isPro";
-export const ANDROID_TIP_WIDGET_NAME = "TinnitusTip";
-export const ANDROID_SOUND_WIDGET_NAME = "TinnitusSound";
-export const ANDROID_CHECKIN_WIDGET_NAME = "TinnitusCheckin";
+// Each feature is registered as a 2x2 and a 4x2 ("...Wide") Android widget.
+export const ANDROID_TIP_WIDGET_NAMES = ["TinnitusTip", "TinnitusTipWide"];
+export const ANDROID_SOUND_WIDGET_NAMES = ["TinnitusSound", "TinnitusSoundWide"];
+export const ANDROID_CHECKIN_WIDGET_NAMES = [
+  "TinnitusCheckin",
+  "TinnitusCheckinWide",
+];
 
 export async function syncWidgets(isPro: boolean): Promise<void> {
   // Android task handler reads Pro state from AsyncStorage on every render.
@@ -34,36 +38,42 @@ export async function syncWidgets(isPro: boolean): Promise<void> {
       const {
         requestWidgetUpdate,
       } = require("react-native-android-widget");
-      const { TinnitusTipWidget } = require("@/widgets/TinnitusTipWidget");
-      await requestWidgetUpdate({
-        widgetName: ANDROID_TIP_WIDGET_NAME,
-        renderWidget: (info: { width: number }) =>
-          TinnitusTipWidget({ isPro, width: info?.width }),
-        widgetNotFound: () => {
-          // No widget placed on the home screen yet — nothing to do.
-        },
-      });
+      const noop = { widgetNotFound: () => {} };
 
-      // Sound widget needs remote data, so fetch it before rendering.
+      const { TinnitusTipWidget } = require("@/widgets/TinnitusTipWidget");
+      for (const widgetName of ANDROID_TIP_WIDGET_NAMES) {
+        await requestWidgetUpdate({
+          widgetName,
+          renderWidget: (info: { width: number }) =>
+            TinnitusTipWidget({ isPro, width: info?.width }),
+          ...noop,
+        });
+      }
+
+      // Sound + check-in widgets need data, so fetch it before rendering.
       const { SoundWidget } = require("@/widgets/SoundWidget");
       const { fetchTodaysSound } = require("@/services/widget/dailySound");
       const sound = isPro ? await fetchTodaysSound() : null;
-      await requestWidgetUpdate({
-        widgetName: ANDROID_SOUND_WIDGET_NAME,
-        renderWidget: (info: { width: number }) =>
-          SoundWidget({ isPro, sound, width: info?.width }),
-        widgetNotFound: () => {},
-      });
+      for (const widgetName of ANDROID_SOUND_WIDGET_NAMES) {
+        await requestWidgetUpdate({
+          widgetName,
+          renderWidget: (info: { width: number }) =>
+            SoundWidget({ isPro, sound, width: info?.width }),
+          ...noop,
+        });
+      }
 
       const { CheckinWidget } = require("@/widgets/CheckinWidget");
       const { buildWidgetData } = require("@/services/checkin");
       const checkinData = isPro ? await buildWidgetData() : null;
-      await requestWidgetUpdate({
-        widgetName: ANDROID_CHECKIN_WIDGET_NAME,
-        renderWidget: (info: { width: number }) =>
-          CheckinWidget({ isPro, data: checkinData, width: info?.width }),
-        widgetNotFound: () => {},
-      });
+      for (const widgetName of ANDROID_CHECKIN_WIDGET_NAMES) {
+        await requestWidgetUpdate({
+          widgetName,
+          renderWidget: (info: { width: number }) =>
+            CheckinWidget({ isPro, data: checkinData, width: info?.width }),
+          ...noop,
+        });
+      }
     } catch {
       // Package not installed / no build with the widget yet.
     }
