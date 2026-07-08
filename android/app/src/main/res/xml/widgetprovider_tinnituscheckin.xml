@@ -9,10 +9,10 @@
 
     android:resizeMode="horizontal|vertical"
 
-    android:description="@string/widget_tinnitussound_description"
+    android:description="@string/widget_tinnituscheckin_description"
 
     android:initialLayout="@layout/rn_widget"
-    android:previewImage="@drawable/tinnitussound_preview"
+    android:previewImage="@drawable/tinnituscheckin_preview"
 
 
 

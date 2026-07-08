@@ -17,7 +17,50 @@ interface Props {
 export function SoundWidget({ isPro, sound, width = 0 }: Props) {
   const isWide = width >= 220;
   const uri = sound ? soundDeepLink(sound.slug) : "tinnitushelp://sounds";
-  const thumb = isWide ? 96 : 48;
+  const thumb = isWide ? 110 : 64;
+
+  let body: React.ReactElement;
+  if (!isPro) {
+    body = (
+      <TextWidget
+        text="🔒 Unlock daily sounds with Pro"
+        style={{ fontSize: isWide ? 15 : 13, color: TEXT }}
+      />
+    );
+  } else {
+    body = (
+      <FlexWidget
+        style={{
+          flexDirection: isWide ? "row" : "column",
+          alignItems: "center",
+          width: "match_parent",
+        }}
+      >
+        {sound?.thumbnail ? (
+          <ImageWidget
+            image={sound.thumbnail as `https:${string}`}
+            imageWidth={thumb}
+            imageHeight={thumb}
+            radius={14}
+            style={{
+              height: thumb,
+              width: thumb,
+              marginRight: isWide ? 14 : 0,
+              marginBottom: isWide ? 0 : 10,
+            }}
+          />
+        ) : null}
+        <TextWidget
+          text={sound?.title ?? "Tap to explore relief sounds"}
+          style={{
+            fontSize: isWide ? 16 : 14,
+            color: TEXT,
+            ...(isWide ? { flex: 1 } : {}),
+          }}
+        />
+      </FlexWidget>
+    );
+  }
 
   return (
     <FlexWidget
@@ -38,50 +81,22 @@ export function SoundWidget({ isPro, sound, width = 0 }: Props) {
         style={{ fontSize: 11, fontFamily: "sans-serif-medium", color: ACCENT }}
       />
 
-      {!isPro ? (
-        <TextWidget
-          text="🔒 Unlock daily sounds with Pro"
-          style={{ fontSize: isWide ? 15 : 13, color: TEXT, marginTop: 10 }}
-        />
-      ) : (
-        <FlexWidget
-          style={{
-            flexDirection: isWide ? "row" : "column",
-            alignItems: isWide ? "center" : "flex-start",
-            marginTop: 10,
-          }}
-        >
-          {sound?.thumbnail ? (
-            <ImageWidget
-              image={sound.thumbnail as `https:${string}`}
-              imageWidth={thumb}
-              imageHeight={thumb}
-              radius={12}
-              style={{
-                height: thumb,
-                width: thumb,
-                marginRight: isWide ? 12 : 0,
-                marginBottom: isWide ? 0 : 8,
-              }}
-            />
-          ) : null}
-          <TextWidget
-            text={sound?.title ?? "Tap to explore relief sounds"}
-            style={{
-              fontSize: isWide ? 15 : 13,
-              color: TEXT,
-              ...(isWide ? { flex: 1 } : {}),
-            }}
-          />
-        </FlexWidget>
-      )}
+      {/* Fills the space between header and footer, centering the content. */}
+      <FlexWidget
+        style={{
+          flex: 1,
+          width: "match_parent",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        {body}
+      </FlexWidget>
 
-      {isWide && isPro && (
-        <TextWidget
-          text="Tap to listen on TinnitusHelp.me"
-          style={{ fontSize: 11, color: HIGHLIGHT, marginTop: 10 }}
-        />
-      )}
+      <TextWidget
+        text="Tap to listen on TinnitusHelp.me"
+        style={{ fontSize: 11, color: HIGHLIGHT }}
+      />
     </FlexWidget>
   );
 }

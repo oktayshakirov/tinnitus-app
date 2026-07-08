@@ -32,37 +32,33 @@ export function TinnitusTipWidget({ isPro, width = 0 }: Props) {
         borderRadius: 24,
         padding: isWide ? 18 : 14,
         flexDirection: "column",
-        // 2x2: center the block vertically so it fills the cell; 4x2: top-align.
-        justifyContent: isWide ? "flex-start" : "center",
+        justifyContent: "flex-start",
       }}
     >
       <TextWidget
-        // Narrow 2x2 cell: shorter one-line title so it doesn't wrap.
         text={isWide ? "DAILY TINNITUS TIP" : "DAILY TIP"}
-        style={{
-          fontSize: 11,
-          fontFamily: "sans-serif-medium",
-          color: ACCENT,
-        }}
+        style={{ fontSize: 11, fontFamily: "sans-serif-medium", color: ACCENT }}
       />
+
+      {/* Fills the space between header and footer, centering the tip. */}
+      <FlexWidget
+        style={{
+          flex: 1,
+          width: "match_parent",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        <TextWidget
+          text={isPro ? tip : "🔒 Unlock daily tips with Pro"}
+          style={{ fontSize: isWide ? 17 : 14, color: TEXT }}
+        />
+      </FlexWidget>
 
       <TextWidget
-        text={isPro ? tip : "🔒 Unlock daily tips with Pro"}
-        style={{
-          // Smaller on 2x2 so more words fit per line.
-          fontSize: isWide ? 16 : 13,
-          color: TEXT,
-          marginTop: 8,
-        }}
+        text="Tap to read more on TinnitusHelp.me"
+        style={{ fontSize: 11, color: HIGHLIGHT }}
       />
-
-      {/* Footer only on the wider 4x2 — on 2x2 the tip uses the full height. */}
-      {isWide && (
-        <TextWidget
-          text="Tap to read more on TinnitusHelp.me"
-          style={{ fontSize: 11, color: HIGHLIGHT, marginTop: 10 }}
-        />
-      )}
     </FlexWidget>
   );
 }

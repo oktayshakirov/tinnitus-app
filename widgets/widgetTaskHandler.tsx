@@ -15,29 +15,24 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
   if (!RENDER_ACTIONS.includes(widgetAction)) return;
 
   const isPro = (await AsyncStorage.getItem(WIDGET_IS_PRO_KEY)) === "1";
+  const width = widgetInfo.width;
+  // Each feature has a 2x2 ("TinnitusTip") and a 4x2 ("TinnitusTipWide")
+  // variant; both render the same responsive component (it switches layout by
+  // width), so match on the name prefix.
+  const name = widgetInfo.widgetName;
 
-  switch (widgetInfo.widgetName) {
-    case "TinnitusTip":
-      props.renderWidget(
-        <TinnitusTipWidget isPro={isPro} width={widgetInfo.width} />
-      );
-      break;
-    case "TinnitusSound": {
-      // Only hit the network when the user is actually Pro.
-      const sound = isPro ? await fetchTodaysSound() : null;
-      props.renderWidget(
-        <SoundWidget isPro={isPro} sound={sound} width={widgetInfo.width} />
-      );
-      break;
-    }
-    case "TinnitusCheckin": {
-      const data = isPro ? await buildWidgetData() : null;
-      props.renderWidget(
-        <CheckinWidget isPro={isPro} data={data} width={widgetInfo.width} />
-      );
-      break;
-    }
-    default:
-      break;
+  if (name.startsWith("TinnitusTip")) {
+    props.renderWidget(<TinnitusTipWidget isPro={isPro} width={width} />);
+  } else if (name.startsWith("TinnitusSound")) {
+    // Only hit the network when the user is actually Pro.
+    const sound = isPro ? await fetchTodaysSound() : null;
+    props.renderWidget(
+      <SoundWidget isPro={isPro} sound={sound} width={width} />
+    );
+  } else if (name.startsWith("TinnitusCheckin")) {
+    const data = isPro ? await buildWidgetData() : null;
+    props.renderWidget(
+      <CheckinWidget isPro={isPro} data={data} width={width} />
+    );
   }
 }
