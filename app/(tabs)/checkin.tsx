@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ScrollView,
   View,
@@ -33,6 +39,15 @@ function monthLabel(d: Date) {
   return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
+// "2026-07-12" -> "Jul 12"
+function friendlyDay(key: string) {
+  const [y, m, d] = key.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default function CheckinScreen() {
   const { isPro } = useRevenueCat();
   const { hideLoader } = useLoader();
@@ -46,21 +61,26 @@ export default function CheckinScreen() {
     return new Date(d.getFullYear(), d.getMonth(), 1);
   });
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  // Which day the entry form edits — today by default, or a past day picked
+  // from the calendar.
+  const [editingDay, setEditingDay] = useState<string>(() => dateKey());
+  const scrollRef = useRef<ScrollView>(null);
 
   const todayKey = dateKey();
   const todayEntry = entries[todayKey];
+  const isEditingToday = editingDay === todayKey;
   const streak = useMemo(() => computeStreak(entries), [entries]);
 
   const refresh = useCallback(async () => {
     const loaded = await loadEntries();
     setEntries(loaded);
-    const today = loaded[dateKey()];
-    if (today) {
-      setLevel(today.level);
-      setFactors(today.factors);
-      setNote(today.note ?? "");
+    const current = loaded[editingDay];
+    if (current) {
+      setLevel(current.level);
+      setFactors(current.factors);
+      setNote(current.note ?? "");
     }
-  }, []);
+  }, [editingDay]);
 
   useEffect(() => {
     refresh();
@@ -81,10 +101,20 @@ export default function CheckinScreen() {
     );
   };
 
+  // Point the entry form at a different day and load whatever it holds.
+  const startEditingDay = (day: string) => {
+    setEditingDay(day);
+    const entry = entries[day];
+    setLevel(entry?.level ?? null);
+    setFactors(entry?.factors ? [...entry.factors] : []);
+    setNote(entry?.note ?? "");
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
   const handleSave = async () => {
     if (!level) return;
     Keyboard.dismiss();
-    const updated = await saveEntry(todayKey, {
+    const updated = await saveEntry(editingDay, {
       level,
       factors,
       note: note.trim() || undefined,
@@ -122,6 +152,7 @@ export default function CheckinScreen() {
 
   return (
     <ScrollView
+      ref={scrollRef}
       style={styles.container}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
@@ -152,8 +183,24 @@ export default function CheckinScreen() {
         </View>
       </View>
 
-      {/* Today's check-in */}
-      <Text style={styles.sectionTitle}>How is your tinnitus today?</Text>
+      {/* Check-in entry form (today by default, or a past day from the calendar) */}
+      <View style={styles.editorHeader}>
+        <Text style={[styles.sectionTitle, styles.editorTitle]}>
+          {isEditingToday
+            ? "How is your tinnitus today?"
+            : `How was your tinnitus on ${friendlyDay(editingDay)}?`}
+        </Text>
+        {!isEditingToday && (
+          <Pressable
+            onPress={() => startEditingDay(todayKey)}
+            hitSlop={8}
+            style={styles.backToToday}
+          >
+            <Ionicons name="arrow-back" size={13} color={Colors.activeIcon} />
+            <Text style={styles.backToTodayText}>Today</Text>
+          </Pressable>
+        )}
+      </View>
       <View style={styles.levelRow}>
         {LEVELS.map((l) => (
           <Pressable
@@ -224,9 +271,13 @@ export default function CheckinScreen() {
         <Text style={styles.saveButtonText}>
           {savedFlash
             ? "Saved! 🎉"
-            : todayEntry
-              ? "Update today's entry"
-              : "Save entry"}
+            : entries[editingDay]
+              ? isEditingToday
+                ? "Update today's entry"
+                : `Update entry for ${friendlyDay(editingDay)}`
+              : isEditingToday
+                ? "Save entry"
+                : `Save entry for ${friendlyDay(editingDay)}`}
         </Text>
       </Pressable>
 
@@ -325,6 +376,21 @@ export default function CheckinScreen() {
           ) : (
             <Text style={styles.cardHint}>No check-in on this day.</Text>
           )}
+          {selectedDay <= todayKey && (
+            <Pressable
+              onPress={() => startEditingDay(selectedDay)}
+              style={styles.editDayButton}
+            >
+              <Ionicons
+                name={selectedEntry ? "pencil" : "add"}
+                size={14}
+                color="#000"
+              />
+              <Text style={styles.editDayButtonText}>
+                {selectedEntry ? "Edit this entry" : "Add an entry"}
+              </Text>
+            </Pressable>
+          )}
         </View>
       )}
     </ScrollView>
@@ -375,6 +441,45 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: Colors.text,
     marginBottom: 12,
+  },
+  editorHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  editorTitle: {
+    flex: 1,
+  },
+  backToToday: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Colors.activeIcon,
+  },
+  backToTodayText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: Colors.activeIcon,
+  },
+  editDayButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: Colors.activeIcon,
+    borderRadius: 10,
+    paddingVertical: 9,
+    marginTop: 12,
+  },
+  editDayButtonText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#000",
   },
   sectionSubtitle: {
     fontSize: 13,
