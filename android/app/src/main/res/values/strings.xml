@@ -9,4 +9,5 @@
   <string name="widget_tinnitussoundwide_description" translatable="false">A relaxing sound to listen to, refreshed every day.</string>
   <string name="expo_splash_screen_resize_mode" translatable="false">cover</string>
   <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
+  <string name="expo_runtime_version">file:fingerprint</string>
 </resources>

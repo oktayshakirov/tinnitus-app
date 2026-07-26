@@ -17,6 +17,7 @@ import {
   useOnboarding,
 } from "@/contexts/OnboardingContext";
 import { getOrRegisterPushToken } from "@/utils/pushToken";
+import { useNotificationDeepLink } from "@/hooks/useNotificationDeepLink";
 import { initializeInterstitial } from "@/components/ads/InterstitialAd";
 import { loadAppOpenAd } from "@/components/ads/AppOpenAd";
 import { useGlobalAds } from "@/components/ads/adsManager";
@@ -47,7 +48,9 @@ function GlobalAdsManager() {
 export default function RootLayout() {
   const [consentCompleted, setConsentCompleted] = useState(false);
   const notificationListener = useRef<EventSubscription | null>(null);
-  const responseListener = useRef<EventSubscription | null>(null);
+
+  // Taps are handled here; this hook owns the response listener.
+  useNotificationDeepLink();
 
   useEffect(() => {
     initialize();
@@ -55,15 +58,9 @@ export default function RootLayout() {
     notificationListener.current =
       Notifications.addNotificationReceivedListener(() => {});
 
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener(() => {});
-
     return () => {
       if (notificationListener.current) {
         notificationListener.current.remove();
-      }
-      if (responseListener.current) {
-        responseListener.current.remove();
       }
     };
   }, []);
