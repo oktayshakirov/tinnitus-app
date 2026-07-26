@@ -39,6 +39,40 @@ export const registerPushToken = onRequest(async (req, res) => {
   }
 });
 
+const SITE_URL = "https://www.tinnitushelp.me";
+
+/**
+ * Documents are keyed by slug, so editing a post's title updates the existing
+ * document instead of creating a new one. The `notify` flag is set by the
+ * blog's sync script, which is the single source of truth for what counts as
+ * genuinely new content. Firestore triggers are at-least-once, so `notifiedAt`
+ * guards against a retry sending the same notification twice.
+ */
+async function claimNotification(
+  ref: FirebaseFirestore.DocumentReference,
+  data: { notify?: boolean; notifiedAt?: unknown } | undefined
+): Promise<boolean> {
+  if (data?.notify !== true) {
+    return false;
+  }
+
+  try {
+    return await db.runTransaction(async (tx) => {
+      const fresh = await tx.get(ref);
+      if (!fresh.exists || fresh.data()?.notifiedAt) {
+        return false;
+      }
+      tx.update(ref, {
+        notifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return true;
+    });
+  } catch (error) {
+    console.error("Error claiming notification:", error);
+    return false;
+  }
+}
+
 async function sendPushNotification(
   title: string,
   body: string,
@@ -83,12 +117,25 @@ export const sendNewPostNotification = onDocumentCreated(
   async (event) => {
     try {
       const snap = event.data!;
-      const postData = snap.data() as { title?: string } | undefined;
-      const postTitle = postData?.title || "New Post";
-      const title = "New Post on TinnitusHelp.me";
-      const body = postTitle;
+      const postData = snap.data() as
+        | { title?: string; slug?: string; notify?: boolean }
+        | undefined;
 
-      await sendPushNotification(title, body);
+      if (!(await claimNotification(snap.ref, postData))) {
+        return;
+      }
+
+      const slug = postData?.slug || event.params.postId;
+
+      await sendPushNotification(
+        "New Post on TinnitusHelp.me",
+        postData?.title || "New Post",
+        {
+          type: "post",
+          slug,
+          url: `${SITE_URL}/blog/${slug}`,
+        }
+      );
     } catch (error) {
       console.error("Error in sendNewPostNotification:", error);
     }
@@ -101,13 +148,24 @@ export const sendNewSoundNotification = onDocumentCreated(
     try {
       const snap = event.data!;
       const soundData = snap.data() as
-        | { title?: string; name?: string }
+        | { title?: string; name?: string; slug?: string; notify?: boolean }
         | undefined;
-      const soundTitle = soundData?.title || soundData?.name || "New Sound";
-      const title = "New Sound on TinnitusHelp.me";
-      const body = soundTitle;
 
-      await sendPushNotification(title, body);
+      if (!(await claimNotification(snap.ref, soundData))) {
+        return;
+      }
+
+      const slug = soundData?.slug || event.params.soundId;
+
+      await sendPushNotification(
+        "New Sound on TinnitusHelp.me",
+        soundData?.title || soundData?.name || "New Sound",
+        {
+          type: "sound",
+          slug,
+          url: `${SITE_URL}/zen/${slug}`,
+        }
+      );
     } catch (error) {
       console.error("Error in sendNewSoundNotification:", error);
     }

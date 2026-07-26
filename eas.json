@@ -1,11 +1,13 @@
 {
   "build": {
     "development": {
+      "channel": "development",
       "ios": {
         "distribution": "internal"
       }
     },
     "production": {
+      "channel": "production",
       "ios": {
         "distribution": "store"
       }
