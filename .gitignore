@@ -55,8 +55,5 @@ ios/*.xcodeproj/project.xcworkspace/xcuserdata/
 # vs
 .vscode
 
-# Firebase Config
-config/FirebaseConfig.ts
-
 # Local reference clones (not part of the app)
 .crypto-wiki-ref/
