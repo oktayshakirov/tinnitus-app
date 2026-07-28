@@ -10,7 +10,9 @@ import { useRefresh } from "@/contexts/RefreshContext";
 import { Colors } from "@/constants/Colors";
 import { useLoader } from "@/contexts/LoaderContext";
 import { useGlobalAds } from "@/components/ads/adsManager";
-import OfflineScreen from "@/components/OfflineScreen";
+import OfflineScreen, {
+  OfflineScreenVariant,
+} from "@/components/OfflineScreen";
 import { useSavedContent } from "@/contexts/SavedContentContext";
 import { useWebView } from "@/contexts/WebViewContext";
 
@@ -18,6 +20,28 @@ import { useWebView } from "@/contexts/WebViewContext";
 // long in the background; a quick app switch keeps scroll position, playing
 // audio and already-loaded content intact.
 const STALE_BACKGROUND_MS = 30 * 60 * 1000;
+
+// A page opened from a push notification can answer 404 for a few seconds while
+// the deployment that contains it is still being promoted. One silent retry
+// absorbs that window instead of showing the user an error screen.
+const AUTO_RETRY_DELAY_MS = 3000;
+const MAX_AUTO_RETRIES = 1;
+
+/**
+ * True when `url` is the page itself rather than one of its subresources.
+ *
+ * onHttpError also fires for images, scripts and stylesheets, so without this
+ * check a single missing asset would replace a page that otherwise loaded
+ * perfectly well with a full-screen error.
+ */
+function isSameDocument(url: string | undefined, current: string): boolean {
+  if (!url) {
+    return false;
+  }
+  const strip = (value: string) =>
+    value.split(/[?#]/)[0].replace(/\/+$/, "").toLowerCase();
+  return strip(url) === strip(current);
+}
 
 const INJECTED_JAVASCRIPT = `
   localStorage.setItem('isApp', 'true');
@@ -50,21 +74,36 @@ export default function WebViewScreen({
   const { registerWebView, unregisterWebView } = useWebView();
   const webViewRef = useRef<WebView | null>(null);
   const [webViewKey, setWebViewKey] = useState(0);
-  const [hasError, setHasError] = useState(false);
+  const [errorKind, setErrorKind] = useState<OfflineScreenVariant | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(overrideUrl ?? defaultUrl);
+  const autoRetriesRef = useRef(0);
+  const autoRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const hasError = errorKind !== null;
 
   const { handleGlobalPress } = useGlobalAds();
 
   // Note: showLoader/hideLoader are recreated on every LoaderProvider render,
   // so they must stay out of effect dependency arrays to avoid reload loops.
+  const cancelAutoRetry = () => {
+    if (autoRetryTimerRef.current) {
+      clearTimeout(autoRetryTimerRef.current);
+      autoRetryTimerRef.current = null;
+    }
+  };
+
   const loadUrl = (url: string) => {
+    cancelAutoRetry();
+    autoRetriesRef.current = 0;
     setCurrentUrl(url);
     setSavedContentUrl(url);
     setWebViewKey((prev) => prev + 1);
-    setHasError(false);
+    setErrorKind(null);
     showLoader();
   };
+
+  useEffect(() => cancelAutoRetry, []);
 
   useEffect(() => {
     loadUrl(defaultUrl);
@@ -146,9 +185,41 @@ export default function WebViewScreen({
     return true;
   };
 
-  const handleError = () => {
+  /**
+   * Reloads once, silently, before giving up and showing `kind`. The loader
+   * stays up for the duration so a transient failure is invisible to the user.
+   */
+  const failWith = (kind: OfflineScreenVariant) => {
+    if (autoRetriesRef.current < MAX_AUTO_RETRIES) {
+      autoRetriesRef.current += 1;
+      cancelAutoRetry();
+      autoRetryTimerRef.current = setTimeout(() => {
+        autoRetryTimerRef.current = null;
+        setWebViewKey((prev) => prev + 1);
+      }, AUTO_RETRY_DELAY_MS);
+      return;
+    }
+
     hideLoader();
-    setHasError(true);
+    setErrorKind(kind);
+  };
+
+  // The device could not reach the site at all.
+  const handleLoadError = () => {
+    failWith("offline");
+  };
+
+  // The site answered, but not with the page. A 404 here is usually content
+  // that has not finished deploying, not a connectivity problem, so it must not
+  // be reported as being offline.
+  const handleHttpError = (syntheticEvent: {
+    nativeEvent: { url?: string; statusCode?: number };
+  }) => {
+    const { url, statusCode } = syntheticEvent.nativeEvent;
+    if (!isSameDocument(url, currentUrl)) {
+      return;
+    }
+    failWith(statusCode && statusCode >= 500 ? "offline" : "notFound");
   };
 
   const handleLoadEnd = () => {
@@ -159,7 +230,8 @@ export default function WebViewScreen({
 
   const handleRetry = () => {
     setIsRetrying(true);
-    setHasError(false);
+    autoRetriesRef.current = 0;
+    setErrorKind(null);
     setWebViewKey((prev) => prev + 1);
     showLoader();
     setTimeout(() => {
@@ -168,13 +240,19 @@ export default function WebViewScreen({
   };
 
   const renderError = () => {
-    return <OfflineScreen onRetry={handleRetry} isRetrying={isRetrying} />;
+    return (
+      <OfflineScreen
+        onRetry={handleRetry}
+        isRetrying={isRetrying}
+        variant={errorKind ?? "offline"}
+      />
+    );
   };
 
   if (hasError) {
     return (
       <View style={[styles.container, { backgroundColor: Colors.background }]}>
-        <OfflineScreen onRetry={handleRetry} isRetrying={isRetrying} />
+        {renderError()}
       </View>
     );
   }
@@ -224,8 +302,8 @@ export default function WebViewScreen({
             }}
             onLoadStart={showLoader}
             onLoadEnd={handleLoadEnd}
-            onError={handleError}
-            onHttpError={handleError}
+            onError={handleLoadError}
+            onHttpError={handleHttpError}
             renderError={renderError}
             onNavigationStateChange={handleNavigationStateChange}
             onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}

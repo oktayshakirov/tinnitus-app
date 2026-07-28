@@ -3,15 +3,46 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Colors } from "@/constants/Colors";
 import MaterialIcons from "@expo/vector-icons/Fontisto";
 
+/**
+ * "offline" is a transport failure - the device could not reach the site at
+ * all. "notFound" is the server answering with an error for this page, which
+ * is a different problem and must not be reported as a connection issue: a
+ * post announced by a push notification can briefly 404 while the deploy that
+ * contains it is still being promoted.
+ */
+export type OfflineScreenVariant = "offline" | "notFound";
+
+const VARIANTS: Record<
+  OfflineScreenVariant,
+  { icon: "wifi" | "question"; title: string; message: string }
+> = {
+  offline: {
+    icon: "wifi",
+    title: "Oops! No Internet Connection",
+    message:
+      "It looks like you're offline. Please check your internet connection and try again.",
+  },
+  notFound: {
+    icon: "question",
+    title: "This Page Isn't Available Yet",
+    message:
+      "We couldn't load this page. If you just tapped a notification, the post may still be going live - try again in a moment.",
+  },
+};
+
 interface OfflineScreenProps {
   onRetry?: () => void;
   isRetrying?: boolean;
+  variant?: OfflineScreenVariant;
 }
 
 export default function OfflineScreen({
   onRetry,
   isRetrying,
+  variant = "offline",
 }: OfflineScreenProps) {
+  const { icon, title, message } = VARIANTS[variant];
+
   const handleRetry = () => {
     if (onRetry) {
       onRetry();
@@ -22,15 +53,12 @@ export default function OfflineScreen({
     <View style={styles.overlayContainer}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <MaterialIcons name="wifi" size={80} color={Colors.icon} />
+          <MaterialIcons name={icon} size={80} color={Colors.icon} />
         </View>
 
-        <Text style={styles.title}>Oops! No Internet Connection</Text>
+        <Text style={styles.title}>{title}</Text>
 
-        <Text style={styles.message}>
-          It looks like you're offline. Please check your internet connection
-          and try again.
-        </Text>
+        <Text style={styles.message}>{message}</Text>
 
         <TouchableOpacity
           style={styles.retryButton}
