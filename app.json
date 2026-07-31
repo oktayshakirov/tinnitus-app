@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.shadev.tinnitushelpme",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-5852582960793521~4990483127"
       },
