@@ -35,6 +35,7 @@ const INSTAGRAM_URL = "https://instagram.com/tinnitushelp.me";
 const FACEBOOK_URL = "https://www.facebook.com/TheTinnitusHelp";
 const TWITTER_URL = "https://x.com/TinnitusHelp_me";
 const TELEGRAM_URL = "https://t.me/tinnitushelpme";
+const YOUTUBE_URL = "https://www.youtube.com/@TinnitusHelpMe";
 
 function openStoreListing() {
   const url =
@@ -323,6 +324,14 @@ export function ConnectModal({ visible, onClose }: ConnectModalProps) {
                 iconColor="#e1306c"
                 trailingIcon="open-outline"
                 onPress={() => Linking.openURL(INSTAGRAM_URL)}
+              />
+              <Divider />
+              <Row
+                icon="logo-youtube"
+                label="Subscribe on YouTube"
+                iconColor="#ff0000"
+                trailingIcon="open-outline"
+                onPress={() => Linking.openURL(YOUTUBE_URL)}
               />
               <Divider />
               <Row
