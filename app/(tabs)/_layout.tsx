@@ -66,6 +66,19 @@ export default function TabLayout() {
         />
 
         <Tabs.Screen
+          name="videos"
+          options={{
+            title: "Videos",
+            tabBarIcon: ({ color }) => (
+              <MaterialIcons name="film" size={23} color={color} />
+            ),
+            tabBarButton: (props) => (
+              <HapticTab {...props} refreshKey="videos" />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
           name="checkin"
           options={{
             title: "Journal",
