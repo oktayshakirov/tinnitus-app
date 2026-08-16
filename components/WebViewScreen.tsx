@@ -15,6 +15,10 @@ import OfflineScreen, {
 } from "@/components/OfflineScreen";
 import { useSavedContent } from "@/contexts/SavedContentContext";
 import { useWebView } from "@/contexts/WebViewContext";
+import {
+  createShouldStartLoadWithRequest,
+  VIDEO_WEBVIEW_PROPS,
+} from "@/utils/webViewVideo";
 
 // Reload the page after returning to foreground only when the app spent this
 // long in the background; a quick app switch keeps scroll position, playing
@@ -176,14 +180,12 @@ export default function WebViewScreen({
     }
   };
 
-  const handleShouldStartLoadWithRequest = (request: { url: string }) => {
-    const { url } = request;
-    if (!url.includes("tinnitushelp.me")) {
+  const handleShouldStartLoadWithRequest = createShouldStartLoadWithRequest(
+    "tinnitushelp.me",
+    (url) => {
       openBrowserAsync(url);
-      return false;
     }
-    return true;
-  };
+  );
 
   /**
    * Reloads once, silently, before giving up and showing `kind`. The loader
@@ -275,6 +277,7 @@ export default function WebViewScreen({
             source={{ uri: currentUrl }}
             cacheEnabled
             domStorageEnabled
+            {...VIDEO_WEBVIEW_PROPS}
             style={styles.webview}
             injectedJavaScript={INJECTED_JAVASCRIPT}
             onMessage={(event) => {
