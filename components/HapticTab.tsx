@@ -3,7 +3,6 @@ import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { PlatformPressable } from "@react-navigation/elements";
 import * as Haptics from "expo-haptics";
 import { useRefresh } from "@/contexts/RefreshContext";
-import { useNavigationState } from "@react-navigation/native";
 
 interface HapticTabProps extends BottomTabBarButtonProps {
   refreshKey: string;
@@ -13,15 +12,17 @@ export function HapticTab(props: HapticTabProps) {
   const { refreshKey, ...rest } = props;
   const { triggerRefresh } = useRefresh(refreshKey);
 
-  const currentRouteIndex = useNavigationState((state) => state?.index ?? 0);
-
-  const getTabIndex = (key: string) => {
-    const tabOrder = ["home", "posts", "sounds", "checkin"];
-    return tabOrder.indexOf(key);
-  };
-
-  const tabIndex = getTabIndex(refreshKey);
-  const isSelected = tabIndex === currentRouteIndex;
+  // Whether this is the tab you are already on, taken from React Navigation
+  // rather than worked out here.
+  //
+  // This used to compare the navigator's index against a hard-coded
+  // ["home", "posts", "sounds", "checkin"], which is only correct while the bar
+  // never changes. Adding Videos in fourth place pushed Journal to index 4
+  // while the list still called it 3, so tapping Journal while on Videos was
+  // read as a tap on the current tab: it refreshed instead of navigating and
+  // the tab did not respond. Anything derived from the tab order has the same
+  // fault waiting in it, so nothing is.
+  const isSelected = props["aria-selected"] === true;
 
   const handlePress = (ev: any) => {
     if (isSelected) {
