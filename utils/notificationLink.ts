@@ -13,17 +13,19 @@
 /** Hosts we are willing to load in the in-app WebView from a notification. */
 const ALLOWED_HOSTS = ["www.tinnitushelp.me", "tinnitushelp.me"];
 
-type TabPath = "/(tabs)/posts" | "/(tabs)/sounds";
+type TabPath = "/(tabs)/posts" | "/(tabs)/sounds" | "/(tabs)/videos";
 
 const TYPE_TO_TAB: Record<string, TabPath> = {
   post: "/(tabs)/posts",
   sound: "/(tabs)/sounds",
+  video: "/(tabs)/videos",
 };
 
 /** Fallback when `type` is missing or unrecognised: infer the tab from the path. */
 const PATH_TO_TAB: { prefix: string; tab: TabPath }[] = [
   { prefix: "/blog", tab: "/(tabs)/posts" },
   { prefix: "/zen", tab: "/(tabs)/sounds" },
+  { prefix: "/videos", tab: "/(tabs)/videos" },
 ];
 
 export interface NotificationTarget {
