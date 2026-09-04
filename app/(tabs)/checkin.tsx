@@ -9,6 +9,7 @@ import {
   ScrollView,
   View,
   Text,
+  Image,
   Pressable,
   TextInput,
   StyleSheet,
@@ -20,6 +21,7 @@ import { Colors } from "@/constants/Colors";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useLoader } from "@/contexts/LoaderContext";
 import { syncWidgets } from "@/services/widget/widgetSync";
+import { InsightsModal } from "@/components/modals/InsightsModal";
 import {
   CheckinMap,
   FACTORS,
@@ -32,6 +34,11 @@ import {
   mostCommonFactor,
   saveEntry,
 } from "@/services/checkin";
+import {
+  addCustomFactor,
+  loadCustomFactors,
+  removeCustomFactor,
+} from "@/services/customFactors";
 
 const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -49,11 +56,15 @@ function friendlyDay(key: string) {
 }
 
 export default function CheckinScreen() {
-  const { isPro } = useRevenueCat();
+  const { isPro, showPaywall } = useRevenueCat();
   const { hideLoader } = useLoader();
+  const [insightsVisible, setInsightsVisible] = useState(false);
   const [entries, setEntries] = useState<CheckinMap>({});
   const [level, setLevel] = useState<number | null>(null);
   const [factors, setFactors] = useState<string[]>([]);
+  const [customFactors, setCustomFactors] = useState<string[]>([]);
+  const [addingFactor, setAddingFactor] = useState(false);
+  const [newFactorText, setNewFactorText] = useState("");
   const [note, setNote] = useState("");
   const [savedFlash, setSavedFlash] = useState(false);
   const [month, setMonth] = useState(() => {
@@ -86,6 +97,10 @@ export default function CheckinScreen() {
     refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    loadCustomFactors().then(setCustomFactors);
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       // Native screen (no WebView) — make sure a leftover global loader from a
@@ -99,6 +114,23 @@ export default function CheckinScreen() {
     setFactors((prev) =>
       prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]
     );
+  };
+
+  const handleAddFactor = async () => {
+    const result = await addCustomFactor(newFactorText, customFactors);
+    setCustomFactors(result.factors);
+    if (!result.error) {
+      setNewFactorText("");
+      setAddingFactor(false);
+    }
+    // On "duplicate" or "limit", leave the input open so the user can see
+    // what they typed and adjust rather than losing it silently.
+  };
+
+  const handleRemoveFactor = async (f: string) => {
+    const updated = await removeCustomFactor(f, customFactors);
+    setCustomFactors(updated);
+    setFactors((prev) => prev.filter((x) => x !== f));
   };
 
   // Point the entry form at a different day and load whatever it holds.
@@ -214,7 +246,11 @@ export default function CheckinScreen() {
               },
             ]}
           >
-            <Text style={styles.levelEmoji}>{l.emoji}</Text>
+            <Image
+              source={l.mascot}
+              style={[styles.levelMascot, level !== l.value && styles.levelMascotDim]}
+              resizeMode="contain"
+            />
             <Text
               style={[
                 styles.levelLabel,
@@ -251,6 +287,80 @@ export default function CheckinScreen() {
             </Pressable>
           );
         })}
+
+        {customFactors.map((f) => {
+          const active = factors.includes(f);
+          return (
+            <View
+              key={f}
+              style={[
+                styles.factorChip,
+                styles.factorChipCustom,
+                active && styles.factorChipActive,
+              ]}
+            >
+              <Pressable onPress={() => toggleFactor(f)} hitSlop={4}>
+                <Text
+                  style={[styles.factorText, active && styles.factorTextActive]}
+                >
+                  {f}
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => handleRemoveFactor(f)}
+                hitSlop={8}
+                style={styles.factorRemoveButton}
+              >
+                <Ionicons
+                  name="close"
+                  size={12}
+                  color={active ? "#000" : "rgba(255,255,255,0.5)"}
+                />
+              </Pressable>
+            </View>
+          );
+        })}
+
+        {addingFactor ? (
+          <View style={styles.addFactorRow}>
+            <TextInput
+              style={styles.addFactorInput}
+              value={newFactorText}
+              onChangeText={setNewFactorText}
+              placeholder="New factor…"
+              placeholderTextColor="rgba(255,255,255,0.4)"
+              maxLength={24}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleAddFactor}
+            />
+            <Pressable
+              onPress={handleAddFactor}
+              hitSlop={8}
+              style={styles.addFactorConfirm}
+            >
+              <Ionicons name="checkmark" size={16} color="#000" />
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                setAddingFactor(false);
+                setNewFactorText("");
+              }}
+              hitSlop={8}
+              style={styles.addFactorCancel}
+            >
+              <Ionicons name="close" size={16} color="rgba(255,255,255,0.6)" />
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable
+            onPress={() => setAddingFactor(true)}
+            style={[styles.factorChip, styles.addFactorChip]}
+          >
+            <Ionicons name="add" size={14} color={Colors.activeIcon} />
+            <Text style={styles.addFactorChipText}>Add</Text>
+          </Pressable>
+        )}
       </View>
 
       <TextInput
@@ -306,6 +416,20 @@ export default function CheckinScreen() {
             ? `Most noted factor: ${topFactor}`
             : "Log a few days to see your patterns here."}
         </Text>
+        <Pressable
+          onPress={() => {
+            if (!isPro) {
+              showPaywall().catch(() => {});
+              return;
+            }
+            setInsightsVisible(true);
+          }}
+          style={styles.insightsButton}
+        >
+          <Ionicons name="analytics" size={14} color={Colors.activeIcon} />
+          <Text style={styles.insightsButtonText}>View Advanced Insights</Text>
+          <Ionicons name="chevron-forward" size={14} color={Colors.activeIcon} />
+        </Pressable>
       </View>
 
       {/* Calendar */}
@@ -360,10 +484,16 @@ export default function CheckinScreen() {
           <Text style={styles.cardLabel}>{selectedDay}</Text>
           {selectedEntry ? (
             <>
-              <Text style={styles.selectedLevel}>
-                {levelMeta(selectedEntry.level).emoji}{" "}
-                {levelMeta(selectedEntry.level).label}
-              </Text>
+              <View style={styles.selectedLevelRow}>
+                <Image
+                  source={levelMeta(selectedEntry.level).mascot}
+                  style={styles.selectedMascot}
+                  resizeMode="contain"
+                />
+                <Text style={styles.selectedLevel}>
+                  {levelMeta(selectedEntry.level).label}
+                </Text>
+              </View>
               {selectedEntry.factors.length > 0 && (
                 <Text style={styles.cardHint}>
                   Factors: {selectedEntry.factors.join(", ")}
@@ -393,6 +523,12 @@ export default function CheckinScreen() {
           )}
         </View>
       )}
+
+      <InsightsModal
+        visible={insightsVisible}
+        onClose={() => setInsightsVisible(false)}
+        entries={entries}
+      />
     </ScrollView>
   );
 }
@@ -501,8 +637,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "transparent",
   },
-  levelEmoji: {
-    fontSize: 22,
+  levelMascot: {
+    width: 34,
+    height: 34,
+  },
+  levelMascotDim: {
+    opacity: 0.55,
   },
   levelLabel: {
     fontSize: 10,
@@ -534,6 +674,60 @@ const styles = StyleSheet.create({
   factorTextActive: {
     color: "#000",
     fontWeight: "600",
+  },
+  factorChipCustom: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  factorRemoveButton: {
+    marginLeft: -2,
+  },
+  addFactorChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    borderStyle: "dashed",
+    borderColor: Colors.activeIcon,
+    backgroundColor: "transparent",
+  },
+  addFactorChipText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: Colors.activeIcon,
+  },
+  addFactorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: CARD_BG,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Colors.activeIcon,
+    borderRadius: 16,
+    paddingLeft: 12,
+    paddingRight: 6,
+    paddingVertical: 4,
+  },
+  addFactorInput: {
+    fontSize: 13,
+    color: Colors.text,
+    minWidth: 90,
+    maxWidth: 140,
+    padding: 0,
+  },
+  addFactorConfirm: {
+    backgroundColor: Colors.activeIcon,
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addFactorCancel: {
+    width: 24,
+    height: 24,
+    alignItems: "center",
+    justifyContent: "center",
   },
   noteInput: {
     backgroundColor: CARD_BG,
@@ -597,11 +791,36 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.6)",
     marginTop: 2,
   },
+  insightsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Colors.activeIcon,
+  },
+  insightsButtonText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: Colors.activeIcon,
+  },
+  selectedLevelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+  },
+  selectedMascot: {
+    width: 28,
+    height: 28,
+  },
   selectedLevel: {
     fontSize: 16,
     fontWeight: "600",
     color: Colors.text,
-    marginBottom: 4,
   },
   calendarHeader: {
     flexDirection: "row",

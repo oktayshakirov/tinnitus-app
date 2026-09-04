@@ -13,12 +13,22 @@ export interface CheckinEntry {
 
 export type CheckinMap = Record<string, CheckinEntry>; // key: YYYY-MM-DD
 
+// Mascot art (shared with the website) stands in for the old system emoji.
+// Four expressions cover the five levels; the two "loud" levels share the
+// worried face, with the colour bar carrying the finer distinction.
+export const MASCOTS = {
+  happy: require("@/assets/images/mascots/mascot-happy.png"),
+  neutral: require("@/assets/images/mascots/mascot-neutral.png"),
+  sad: require("@/assets/images/mascots/mascot-sad.png"),
+  scared: require("@/assets/images/mascots/mascot-scared.png"),
+} as const;
+
 export const LEVELS = [
-  { value: 1, emoji: "😌", label: "Barely noticeable", color: "#4ade80" },
-  { value: 2, emoji: "🙂", label: "Mild", color: "#a3e635" },
-  { value: 3, emoji: "😐", label: "Moderate", color: "#facc15" },
-  { value: 4, emoji: "😣", label: "Loud", color: "#fb923c" },
-  { value: 5, emoji: "😖", label: "Very loud", color: "#f87171" },
+  { value: 1, emoji: "😌", mascot: MASCOTS.happy, label: "Quiet", color: "#4ade80" },
+  { value: 2, emoji: "🙂", mascot: MASCOTS.neutral, label: "Mild", color: "#a3e635" },
+  { value: 3, emoji: "😐", mascot: MASCOTS.sad, label: "Moderate", color: "#facc15" },
+  { value: 4, emoji: "😣", mascot: MASCOTS.scared, label: "Loud", color: "#fb923c" },
+  { value: 5, emoji: "😖", mascot: MASCOTS.scared, label: "Severe", color: "#f87171" },
 ] as const;
 
 export const FACTORS = [
@@ -121,6 +131,97 @@ export function mostCommonFactor(
     }
   }
   return best;
+}
+
+// Levels for the last N days (oldest first); 0 = no entry that day. Powers
+// the Pro Advanced Insights trend chart (last7Levels only covers a week).
+export function lastNLevels(
+  entries: CheckinMap,
+  days: number,
+  today: Date = new Date()
+): number[] {
+  const out: number[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    out.push(entries[dateKey(d)]?.level ?? 0);
+  }
+  return out;
+}
+
+export interface FactorImpact {
+  factor: string;
+  count: number;
+  avgLevelWith: number;
+  avgLevelWithout: number;
+  // Percent difference between avgLevelWith and avgLevelWithout.
+  deltaPercent: number;
+}
+
+/**
+ * For each factor logged at least `minCount` times in the window, compares
+ * the average level on days it was noted vs days it wasn't - a simple
+ * correlation, not causation, but enough to surface "your levels tend to be
+ * higher on days you note X".
+ */
+export function factorImpact(
+  entries: CheckinMap,
+  days: number = 90,
+  today: Date = new Date(),
+  minCount: number = 3
+): FactorImpact[] {
+  const withFactor: Record<string, number[]> = {};
+  const withoutFactor: Record<string, number[]> = {};
+  const allFactorsSeen = new Set<string>();
+
+  const dayEntries: CheckinEntry[] = [];
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const entry = entries[dateKey(d)];
+    if (entry) dayEntries.push(entry);
+  }
+
+  for (const entry of dayEntries) {
+    for (const f of entry.factors) allFactorsSeen.add(f);
+  }
+
+  for (const factor of allFactorsSeen) {
+    withFactor[factor] = [];
+    withoutFactor[factor] = [];
+    for (const entry of dayEntries) {
+      if (entry.factors.includes(factor)) {
+        withFactor[factor].push(entry.level);
+      } else {
+        withoutFactor[factor].push(entry.level);
+      }
+    }
+  }
+
+  const avg = (nums: number[]) =>
+    nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : 0;
+
+  const results: FactorImpact[] = [];
+  for (const factor of allFactorsSeen) {
+    const withArr = withFactor[factor];
+    const withoutArr = withoutFactor[factor];
+    if (withArr.length < minCount || withoutArr.length === 0) continue;
+
+    const avgWith = avg(withArr);
+    const avgWithout = avg(withoutArr);
+    const deltaPercent =
+      avgWithout > 0 ? ((avgWith - avgWithout) / avgWithout) * 100 : 0;
+
+    results.push({
+      factor,
+      count: withArr.length,
+      avgLevelWith: avgWith,
+      avgLevelWithout: avgWithout,
+      deltaPercent,
+    });
+  }
+
+  return results.sort((a, b) => Math.abs(b.deltaPercent) - Math.abs(a.deltaPercent));
 }
 
 // Snapshot for the home-screen widgets.
