@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "@/constants/Colors";
 import MaterialIcons from "@expo/vector-icons/Fontisto";
 import { useOnboarding } from "@/contexts/OnboardingContext";
+import { MASCOTS } from "@/services/checkin";
 
 const { width, height } = Dimensions.get("window");
 
@@ -48,6 +49,21 @@ export default function OnboardingScreen() {
     }
   };
 
+  // The mascot stands in for the icon on the two steps it's most relevant
+  // to (the greeting, and the mood-journal feature it lives in elsewhere);
+  // the other steps keep a plain icon since a face doesn't read as well for
+  // "articles" or "sounds".
+  const getStepMascot = () => {
+    switch (stepData.id) {
+      case "welcome":
+        return MASCOTS.happy;
+      case "checkin":
+        return MASCOTS.happy;
+      default:
+        return null;
+    }
+  };
+
   const getStepColor = () => {
     return Colors.highlight;
   };
@@ -76,14 +92,22 @@ export default function OnboardingScreen() {
           </View>
           <View style={styles.mainContent}>
             <View style={styles.iconContainer}>
-              <View
-                style={[
-                  styles.iconBackground,
-                  { backgroundColor: getStepColor() },
-                ]}
-              >
-                <MaterialIcons name={getStepIcon()} size={50} color="#000" />
-              </View>
+              {getStepMascot() ? (
+                <Image
+                  source={getStepMascot()!}
+                  style={styles.mascot}
+                  resizeMode="contain"
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.iconBackground,
+                    { backgroundColor: getStepColor() },
+                  ]}
+                >
+                  <MaterialIcons name={getStepIcon()} size={50} color="#000" />
+                </View>
+              )}
             </View>
 
             <Text style={styles.title}>{stepData.title}</Text>
@@ -199,6 +223,10 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     marginBottom: 40,
+  },
+  mascot: {
+    width: 120,
+    height: 120,
   },
   iconBackground: {
     width: 120,

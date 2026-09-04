@@ -1,13 +1,25 @@
 import React from "react";
-import { FlexWidget, TextWidget } from "react-native-android-widget";
+import { FlexWidget, TextWidget, ImageWidget } from "react-native-android-widget";
 import type { CheckinWidgetData } from "@/services/checkin";
+import { MASCOT_DATA } from "./mascotData";
 
 const BG = "#5B3964";
 const TEXT = "#FFFFFF";
 const HIGHLIGHT = "#FFDAB9";
 const ACCENT = "#FFD2A6";
 
-const LEVEL_EMOJI = ["😌", "🙂", "😐", "😣", "😖"];
+// Mascot faces (shared with the website) — four expressions across five levels.
+// Passed as inline base64 data URIs: react-native-android-widget resolves
+// require()'d assets to a Metro dev-server URL in dev, but that path can't be
+// reached in a release build, so the widget's face silently fails to load.
+// A data URI needs no network fetch and renders the same in both.
+const LEVEL_MASCOT: `data:image${string}`[] = [
+  MASCOT_DATA.happy,
+  MASCOT_DATA.neutral,
+  MASCOT_DATA.sad,
+  MASCOT_DATA.scared,
+  MASCOT_DATA.scared,
+];
 const LEVEL_COLORS = ["#4ade80", "#a3e635", "#facc15", "#fb923c", "#f87171"];
 
 interface Props {
@@ -22,7 +34,16 @@ export function CheckinWidget({ isPro, data, width = 0 }: Props) {
   const todayLevel = data?.todayLevel ?? 0;
   const checkedIn = todayLevel > 0;
 
-  const bigEmoji = checkedIn ? LEVEL_EMOJI[todayLevel - 1] : "📝";
+  const faceSize = isWide ? 44 : 40;
+  const face = checkedIn ? (
+    <ImageWidget
+      image={LEVEL_MASCOT[todayLevel - 1]}
+      imageWidth={faceSize}
+      imageHeight={faceSize}
+    />
+  ) : (
+    <TextWidget text="📝" style={{ fontSize: faceSize }} />
+  );
   const streakShort =
     streak > 0 ? `🔥 ${streak}-day streak` : "Start your streak";
   const streakLong =
@@ -58,7 +79,7 @@ export function CheckinWidget({ isPro, data, width = 0 }: Props) {
             width: "match_parent",
           }}
         >
-          <TextWidget text={bigEmoji} style={{ fontSize: 40 }} />
+          {face}
           <TextWidget
             text={checkedIn ? "Logged today" : "Tap to log today"}
             style={{ fontSize: 12, color: TEXT, marginTop: 6 }}
@@ -100,7 +121,7 @@ export function CheckinWidget({ isPro, data, width = 0 }: Props) {
               style={{ fontSize: 13, color: HIGHLIGHT, marginTop: 4 }}
             />
           </FlexWidget>
-          <TextWidget text={bigEmoji} style={{ fontSize: 42 }} />
+          {face}
         </FlexWidget>
         <FlexWidget
           style={{

@@ -25,7 +25,12 @@ private func checkinIsPro() -> Bool {
   UserDefaults(suiteName: appGroup)?.bool(forKey: "isPro") ?? false
 }
 
-private let levelEmoji = ["😌", "🙂", "😐", "😣", "😖"]
+// Mascot faces (shared with the website) — four expressions across five
+// levels, bundled in the target's own asset catalog (Assets.xcassets), so no
+// network fetch or App Group data is needed to render them.
+private let levelMascot = [
+  "mascot-happy", "mascot-neutral", "mascot-sad", "mascot-scared", "mascot-scared",
+]
 private let levelColors: [Color] = [
   Color(red: 0x4A / 255, green: 0xDE / 255, blue: 0x80 / 255),
   Color(red: 0xA3 / 255, green: 0xE6 / 255, blue: 0x35 / 255),
@@ -76,8 +81,21 @@ struct CheckinEntryView: View {
 
   private var checkedIn: Bool { entry.data.todayLevel > 0 }
 
-  private var bigEmoji: String {
-    checkedIn ? levelEmoji[min(max(entry.data.todayLevel, 1), 5) - 1] : "📝"
+  // Nil when not checked in yet, so the caller falls back to a plain "tap to
+  // log" glyph instead of a mascot.
+  private var mascotName: String? {
+    checkedIn ? levelMascot[min(max(entry.data.todayLevel, 1), 5) - 1] : nil
+  }
+
+  @ViewBuilder private func face(size: CGFloat) -> some View {
+    if let name = mascotName {
+      Image(name)
+        .resizable()
+        .aspectRatio(contentMode: .fit)
+        .frame(width: size, height: size)
+    } else {
+      Text("📝").font(.system(size: size))
+    }
   }
 
   private var statusText: String {
@@ -126,7 +144,7 @@ struct CheckinEntryView: View {
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
       } else if isSmall {
         Spacer(minLength: 0)
-        Text(bigEmoji).font(.system(size: 40))
+        face(size: 40)
         Text(checkedIn ? "Logged today" : "Tap to log today")
           .font(.system(size: 12, weight: .medium))
           .foregroundColor(.white)
@@ -152,7 +170,7 @@ struct CheckinEntryView: View {
               .minimumScaleFactor(0.7)
           }
           Spacer(minLength: 8)
-          Text(bigEmoji).font(.system(size: 42))
+          face(size: 42)
         }
         Spacer(minLength: 0)
         chart

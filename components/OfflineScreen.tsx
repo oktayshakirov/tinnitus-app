@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { Colors } from "@/constants/Colors";
 import MaterialIcons from "@expo/vector-icons/Fontisto";
+import { MASCOTS } from "@/services/checkin";
 
 /**
  * "offline" is a transport failure - the device could not reach the site at
@@ -14,16 +15,16 @@ export type OfflineScreenVariant = "offline" | "notFound";
 
 const VARIANTS: Record<
   OfflineScreenVariant,
-  { icon: "wifi" | "question"; title: string; message: string }
+  { mascot: number; title: string; message: string }
 > = {
   offline: {
-    icon: "wifi",
+    mascot: MASCOTS.sad,
     title: "Oops! No Internet Connection",
     message:
       "It looks like you're offline. Please check your internet connection and try again.",
   },
   notFound: {
-    icon: "question",
+    mascot: MASCOTS.neutral,
     title: "This Page Isn't Available Yet",
     message:
       "We couldn't load this page. If you just tapped a notification, the post may still be going live - try again in a moment.",
@@ -41,7 +42,7 @@ export default function OfflineScreen({
   isRetrying,
   variant = "offline",
 }: OfflineScreenProps) {
-  const { icon, title, message } = VARIANTS[variant];
+  const { mascot, title, message } = VARIANTS[variant];
 
   const handleRetry = () => {
     if (onRetry) {
@@ -53,7 +54,7 @@ export default function OfflineScreen({
     <View style={styles.overlayContainer}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <MaterialIcons name={icon} size={80} color={Colors.icon} />
+          <Image source={mascot} style={styles.mascot} resizeMode="contain" />
         </View>
 
         <Text style={styles.title}>{title}</Text>
@@ -107,7 +108,10 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     marginBottom: 24,
-    opacity: 0.6,
+  },
+  mascot: {
+    width: 96,
+    height: 96,
   },
   title: {
     fontSize: 24,
